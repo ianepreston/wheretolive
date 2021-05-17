@@ -6,6 +6,8 @@ https://fastapi.tiangolo.com/
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from scraper import rfaster
+
 app = FastAPI()
 
 
@@ -17,12 +19,12 @@ class Item(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Hello": "scraper test"}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/rentfaster/listings/{city_id}/{page}")
+def get_rentfaster_listings(city_id: int = 1, page: int = 1):
+    return rfaster.get_listings(city_id, page)
 
 
 @app.put("/items/{item_id}")
