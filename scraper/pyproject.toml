@@ -14,6 +14,8 @@ python = "^3.7"
 fastapi = "0.52.0"
 gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
+requests = "^2.25.1"
+geocoder = "^1.38.1"
 
 
 [tool.poetry.dev-dependencies]
@@ -22,6 +24,7 @@ coverage = { version = "5.0.3", extras = ["toml"]}
 black = "^19.10b0"
 isort = { version = "^4.3.21", extras = ["pyproject"]}
 requests = "^2.23.0"
+flake8 = "^3.9.2"
 
 
 [tool.black]
