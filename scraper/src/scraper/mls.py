@@ -1,10 +1,9 @@
-import json
-
+"""Scrape data from MLS.ca."""
 import geocoder
 import requests
 
-MAP_URL = 'https://www.realtor.ca/Residential/Map.aspx'
-API_URL = 'https://api.realtor.ca'
+MAP_URL = "https://www.realtor.ca/Residential/Map.aspx"
+API_URL = "https://api.realtor.ca"
 
 PROPERTY_SEARCH_TYPE = {
     0: "No Preference",
@@ -20,20 +19,21 @@ PROPERTY_SEARCH_TYPE = {
 
 def get_city(city_name: str = "Calgary, Canada") -> geocoder.api.OsmQuery:
     """Geocoded location for search.
-    
+
     Parameters
     ----------
     city_name: str, default "Calgary, Canada"
         The city to query
-    
+
     Returns
     -------
     geocoder.api.OsmQuery
     """
     return geocoder.osm(city_name)
 
+
 g = get_city()
-max_results=10
+max_results = 10
 payload = {
     "CultureId": "1",
     "ApplicationId": "37",
