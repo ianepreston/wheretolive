@@ -1,5 +1,4 @@
 # From: https://github.com/tiangolo/uvicorn-gunicorn-docker/blob/315f04413114e938ff37a410b5979126facc90af/python3.7/gunicorn_conf.py
-
 import json
 import multiprocessing
 import os
