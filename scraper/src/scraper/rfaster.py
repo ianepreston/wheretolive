@@ -1,7 +1,6 @@
 """Scrape data from rentfaster.ca."""
 import json
 import urllib.request
-from typing import Dict
 from typing import List
 from typing import Union
 
@@ -45,7 +44,7 @@ class RFasterListingSummary(BaseModel):
     utilities_included: Union[List[str], str]
 
 
-def get_listings(city_id: int = 1, page: int = 1) -> Dict:
+def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]:
     """Retrieve listings.
 
     Code modified from

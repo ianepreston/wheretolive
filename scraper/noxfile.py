@@ -14,9 +14,9 @@ python_versions = ["3.9"]
 nox.options.sessions = (
     "pre-commit",
     "safety",
-    # "mypy",
+    "mypy",
     "tests",
-    "typeguard",
+    # "typeguard",
     # "xdoctest",
     # "docs-build",
 )
@@ -126,7 +126,7 @@ def mypy(session: Session) -> None:
     session: Session
         The Session object.
     """
-    args = session.posargs or ["src", "tests", "docs/conf.py"]
+    args = session.posargs or ["src"]
     session.install(".")
     session.install("mypy", "pytest")
     session.run("mypy", *args)
