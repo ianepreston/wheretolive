@@ -11,11 +11,11 @@ authors = ["Ian Preston"]
 [tool.poetry.dependencies]
 python = "^3.7"
 
-fastapi = "0.52.0"
 gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
 requests = "^2.25.1"
 geocoder = "^1.38.1"
+fastapi = "^0.65.1"
 
 
 [tool.poetry.dev-dependencies]
