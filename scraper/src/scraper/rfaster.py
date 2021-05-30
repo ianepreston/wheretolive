@@ -1,11 +1,36 @@
 """Scrape data from rentfaster.ca."""
 import json
+import re
 import urllib.request
+from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
+
+
+def _parse_listing(listing: Dict) -> Dict:
+    """Do some pre-validation and parsing on rentfaster listing.
+
+    Run this before passing to pydantic
+
+    Parameters
+    ----------
+    listing: Dict
+        The raw listing dumped from JSON
+
+    Returns
+    -------
+    Dict
+        The listing with some post-processing applied
+    """
+    listing["sq_feet"] = re.sub("[^0-9.]", "", listing["sq_feet"])
+    if not listing["sq_feet"]:
+        listing["sq_feet"] = None
+
+    return listing
 
 
 class RFasterListingSummary(BaseModel):
@@ -16,8 +41,8 @@ class RFasterListingSummary(BaseModel):
     uid: int = Field(alias="id")
     title: str
     price: int
-    type: str
-    sq_feet: str
+    listing_type: str = Field(alias="type")
+    sq_feet: Optional[int]
     availability: str
     avdate: str
     location: str
@@ -74,5 +99,7 @@ def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]
     url = f"https://www.rentfaster.ca/api/search.json?proximity_type=location-city&novacancy=0&cur_page={page}&city_id={city_id}"  # noqa: E510
     r = urllib.request.urlopen(url)  # noqa: S310
     data = json.loads(r.read())
-    results = [RFasterListingSummary(**result) for result in data["listings"]]
+    results = [
+        RFasterListingSummary(**_parse_listing(result)) for result in data["listings"]
+    ]
     return results
