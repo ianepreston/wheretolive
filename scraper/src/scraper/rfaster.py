@@ -61,12 +61,12 @@ class RFasterListingSummary(BaseModel):
     lease_term: str
     garage_size: str
     status: str
-    bedrooms: str
-    den: str
-    baths: str
-    cats: bool
-    dogs: bool
-    utilities_included: Union[List[str], str]
+    bedrooms: Optional[str]
+    den: Optional[str]
+    baths: Optional[str]
+    cats: Optional[bool]
+    dogs: Optional[bool]
+    utilities_included: Optional[Union[List[str], str]]
 
 
 def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]:
