@@ -26,9 +26,10 @@ def _parse_listing(listing: Dict) -> Dict:
     Dict
         The listing with some post-processing applied
     """
-    listing["sq_feet"] = re.sub("[^0-9.]", "", listing["sq_feet"])
+    listing["sq_feet"] = re.sub("[^0-9]", "", listing["sq_feet"])
     if not listing["sq_feet"]:
         listing["sq_feet"] = None
+    listing["link"] = f"https://www.rentfaster.ca{listing['link']}"
 
     return listing
 
