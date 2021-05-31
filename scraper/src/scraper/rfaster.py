@@ -29,6 +29,12 @@ def _parse_listing(listing: Dict) -> Dict:
     listing["sq_feet"] = re.sub("[^0-9]", "", listing["sq_feet"])
     if not listing["sq_feet"]:
         listing["sq_feet"] = None
+    rgx = re.compile(r"^.*\/([0-9_]*$)")
+    link_end = rgx.match(listing["link"]).groups()[0]
+    if "_" in link_end:
+        base, decimal = link_end.split("_")
+        listing["id"] = f"{base}.{decimal}"
+
     listing["link"] = f"https://www.rentfaster.ca{listing['link']}"
 
     return listing
@@ -39,29 +45,29 @@ class RFasterListingSummary(BaseModel):
 
     ref_id: int
     user_id: int = Field(alias="userId")
-    uid: int = Field(alias="id")
+    uid: float = Field(alias="id")
     title: str
     price: int
     listing_type: str = Field(alias="type")
     sq_feet: Optional[int]
     availability: str
-    avdate: str
-    location: str
-    rented: str
+    avdate: Optional[str]
+    location: Optional[str]
+    rented: Optional[str]
     thumb: str
     link: str
     slide: str
-    latitude: float
-    longitude: float
-    marker: str
-    address: str
+    latitude: Optional[float]
+    longitude: Optional[float]
+    marker: Optional[str]
+    address: Optional[str]
     address_hidden: bool
     city: str
     province: str
-    smoking: str
-    lease_term: str
-    garage_size: str
-    status: str
+    smoking: Optional[str]
+    lease_term: Optional[str]
+    garage_size: Optional[str]
+    status: Optional[str]
     bedrooms: Optional[str]
     den: Optional[str]
     baths: Optional[str]
