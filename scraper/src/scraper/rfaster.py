@@ -42,6 +42,24 @@ def _parse_listing(listing: Dict) -> Dict:
     return listing
 
 
+def _is_housing(listing: Dict) -> bool:
+    """Check that this isn't for a parking space or something.
+
+    Parameters
+    ----------
+    listing: Dict
+        The raw JSON of the listing
+
+    Returns
+    -------
+    bool:
+        Whether or not this should be included in the result set
+    """
+    if listing["type"] in ["Office Space", "Parking Spot", "Storage", "Shared"]:
+        return False
+    return True
+
+
 class RFasterListingSummary(BaseModel):
     """Summary of a rentfaster listing."""
 
@@ -109,6 +127,8 @@ def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]
     r = urllib.request.urlopen(url)  # noqa: S310
     data = json.loads(r.read())
     results = [
-        RFasterListingSummary(**_parse_listing(result)) for result in data["listings"]
+        RFasterListingSummary(**_parse_listing(result))
+        for result in data["listings"]
+        if _is_housing(result)
     ]
     return results
