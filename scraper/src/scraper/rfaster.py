@@ -33,7 +33,9 @@ def _parse_listing(listing: Dict) -> Dict:
     link_end = rgx.match(listing["link"]).groups()[0]
     if "_" in link_end:
         base, decimal = link_end.split("_")
-        listing["id"] = f"{base}.{decimal}"
+        listing["id"] = f"{base}_{decimal}"
+    else:
+        listing["id"] = f"{listing['id']}_0"
 
     listing["link"] = f"https://www.rentfaster.ca{listing['link']}"
 
@@ -45,7 +47,7 @@ class RFasterListingSummary(BaseModel):
 
     ref_id: int
     user_id: int = Field(alias="userId")
-    uid: float = Field(alias="id")
+    uid: str = Field(alias="id")
     title: str
     price: int
     listing_type: str = Field(alias="type")
