@@ -26,9 +26,16 @@ def _parse_listing(listing: Dict) -> Dict:
     Dict
         The listing with some post-processing applied
     """
+    # clean out commentary. For example, one listing was "about 750", I want that
+    # to just say 750
     listing["sq_feet"] = re.sub("[^0-9]", "", listing["sq_feet"])
     if not listing["sq_feet"]:
         listing["sq_feet"] = None
+    # Multiple listings can share an id, like if a building has different types of
+    # units. The site generates a _ and a number after the link for these listings.
+    # It doesn't do anything to the presentation of the page, presumably it's just for
+    # analytics, but I can use it to make a unique id per listing. If there isn't an
+    # underscore, that's a single listing, so just make it _0
     rgx = re.compile(r"^.*\/([0-9_]*$)")
     link_end = rgx.match(listing["link"]).groups()[0]
     if "_" in link_end:
@@ -38,7 +45,6 @@ def _parse_listing(listing: Dict) -> Dict:
         listing["id"] = f"{listing['id']}_0"
 
     listing["link"] = f"https://www.rentfaster.ca{listing['link']}"
-
     return listing
 
 
