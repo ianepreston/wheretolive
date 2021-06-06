@@ -1,17 +1,17 @@
 """Scrape data from rentfaster.ca."""
 import json
 import re
+import time
 import urllib.request
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
 
 
-def _parse_listing(listing: Dict) -> Dict:
+def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     """Do some pre-validation and parsing on rentfaster listing.
 
     Run this before passing to pydantic
@@ -43,6 +43,36 @@ def _parse_listing(listing: Dict) -> Dict:
         listing["id"] = f"{base}_{decimal}"
     else:
         listing["id"] = f"{listing['id']}_0"
+    # There doesn't appear to be any consistency between listing bedroom as
+    # "1 + Den" and listing bedroom as "1" and Den as "yes", let's consolidate that
+    # clean up den first, assume blank is No
+    if listing["den"] in ["No", ""]:
+        listing["den"] = False
+    elif listing["den"] == "Yes":
+        listing["den"] = True
+    if " + Den" in listing["bedrooms"]:
+        listing["den"] = True
+        listing["bedrooms"] = listing["bedrooms"].replace(" + Den", "")
+    # I'm going to call bachelor 0
+    if listing["bedrooms"] in ["bachelor", "none"]:
+        listing["bedrooms"] = "0"
+    if listing["baths"] == "none":
+        listing["baths"] = None
+    # Utilities listing is going to be really hard to parse as it is, but
+    # There seems to be a pretty consistent way they're entered
+    util_keys = ["electricity", "water", "heat", "internet", "cable"]
+    for util_key in util_keys:
+        listing[util_key] = False
+        if not listing["utilities_included"]:
+            pass
+        elif util_key.title() in listing["utilities_included"]:
+            listing[util_key] = True
+    if not listing["utilities_included"]:
+        listing["util_check_listing"] = False
+    elif "See Full Description" in listing["utilities_included"]:
+        listing["util_check_listing"] = True
+    else:
+        listing["util_check_listing"] = False
 
     listing["link"] = f"https://www.rentfaster.ca{listing['link']}"
     return listing
@@ -61,9 +91,7 @@ def _is_housing(listing: Dict) -> bool:
     bool:
         Whether or not this should be included in the result set
     """
-    if listing["type"] in ["Office Space", "Parking Spot", "Storage", "Shared"]:
-        return False
-    return True
+    return listing["type"] not in ["Office Space", "Parking Spot", "Storage", "Shared"]
 
 
 class RFasterListingSummary(BaseModel):
@@ -77,15 +105,14 @@ class RFasterListingSummary(BaseModel):
     listing_type: str = Field(alias="type")
     sq_feet: Optional[int]
     availability: str
-    avdate: Optional[str]
-    location: Optional[str]
+    avdate: str
+    neighbourhood: Optional[str] = Field(alias="location")
     rented: Optional[str]
     thumb: str
     link: str
     slide: str
-    latitude: Optional[float]
-    longitude: Optional[float]
-    marker: Optional[str]
+    latitude: float
+    longitude: float
     address: Optional[str]
     address_hidden: bool
     city: str
@@ -93,17 +120,21 @@ class RFasterListingSummary(BaseModel):
     smoking: Optional[str]
     lease_term: Optional[str]
     garage_size: Optional[str]
-    status: Optional[str]
-    bedrooms: Optional[str]
-    den: Optional[str]
-    baths: Optional[str]
-    cats: Optional[bool]
-    dogs: Optional[bool]
-    utilities_included: Optional[Union[List[str], str]]
+    bedrooms: int
+    den: bool
+    baths: Optional[float]
+    cats: bool
+    dogs: bool
+    electricity: bool
+    water: bool
+    heat: bool
+    cable: bool
+    internet: bool
+    util_check_listing: bool
 
 
-def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]:
-    """Retrieve listings.
+def get_listings_page(city_id: int = 1, page: int = 0) -> List[RFasterListingSummary]:
+    """Retrieve listings for a specific page.
 
     Code modified from
     https://github.com/furas/python-examples/blob/master/__scraping__/rentfaster.ca%20-%20requests/main.py  # noqa: E510
@@ -124,8 +155,8 @@ def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]
 
     Returns
     -------
-    Dict
-        Dictionary of results, gotta work out the format for this still.
+    List[RFasterListingsSummary]
+        parsed list of a page of rentfaster listings
     """
     # This is a hard coded url so I don't have to worry about users passing file:/ or
     # other custom schemes
@@ -138,3 +169,35 @@ def get_listings(city_id: int = 1, page: int = 1) -> List[RFasterListingSummary]
         if _is_housing(result)
     ]
     return results
+
+
+def get_all_listings(city_id: int = 1) -> List[RFasterListingSummary]:
+    """Get all available listings from rentfaster.
+
+    Parameters
+    ----------
+    city_id: int, default 1
+        The city_id to query, default is 1 for Calgary
+    page: int, default 1
+        Results can be broken over pages, default to the first page
+
+    Returns
+    -------
+    List[RFasterListingsSummary]
+        parsed list of a page of rentfaster listings
+    """
+    # Not completely happy with how I've structured this while loop, but I'll deal
+    page = 0
+    listings = list()
+    page_list = get_listings_page(city_id=city_id, page=page)
+    listings.extend(page_list)
+    while page_list:
+        # be polite, don't hammer the server
+        time.sleep(5)
+        # Get rid of this later
+        if not page % 10:
+            print(page)
+        page += 1
+        page_list = get_listings_page(city_id=city_id, page=page)
+        listings.extend(page_list)
+    return listings
