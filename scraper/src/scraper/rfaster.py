@@ -194,9 +194,6 @@ def get_all_listings(city_id: int = 1) -> List[RFasterListingSummary]:
     while page_list:
         # be polite, don't hammer the server
         time.sleep(5)
-        # Get rid of this later
-        if not page % 10:
-            print(page)
         page += 1
         page_list = get_listings_page(city_id=city_id, page=page)
         listings.extend(page_list)
