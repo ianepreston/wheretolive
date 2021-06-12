@@ -1,4 +1,5 @@
 """Scrape data from rentfaster.ca."""
+import datetime as dt
 import json
 import re
 import time
@@ -9,6 +10,35 @@ from typing import Optional
 
 from pydantic import BaseModel
 from pydantic import Field
+
+
+def _avdate_parser(avdate: str) -> Optional[dt.date]:
+    """Parse the availability date to a real date.
+
+    Parameters
+    ----------
+    avdate: str
+        The raw availability date string
+
+    Returns
+    -------
+    Optional[dt.date]
+        Parsed date if possible or None
+    """
+    today = dt.date.today()
+    if avdate == "Immediate":
+        clean_date = today
+    elif avdate in ["Negotiable", "Call for Availability"]:
+        clean_date = None
+    else:
+        try:
+            datetime = dt.datetime.strptime(avdate, "%B %d").replace(year=today.year)
+            clean_date = dt.date(datetime.year, datetime.month, datetime.day)
+            if clean_date < today:
+                clean_date = clean_date.replace(year=today.year + 1)
+        except ValueError:
+            clean_date = None
+    return clean_date
 
 
 def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
@@ -26,6 +56,7 @@ def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     Dict
         The listing with some post-processing applied
     """
+    listing["avdate"] = _avdate_parser(listing["availability"])
     # clean out commentary. For example, one listing was "about 750", I want that
     # to just say 750
     # Keep the raw square footage in case there's a parsing error I need to fix
@@ -96,7 +127,7 @@ def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     return listing
 
 
-def _is_housing(listing: Dict) -> bool:
+def _is_valid(listing: Dict) -> bool:
     """Check that this isn't for a parking space or something.
 
     Parameters
@@ -109,7 +140,14 @@ def _is_housing(listing: Dict) -> bool:
     bool:
         Whether or not this should be included in the result set
     """
-    return listing["type"] not in ["Office Space", "Parking Spot", "Storage", "Shared"]
+    is_housing = listing["type"] not in [
+        "Office Space",
+        "Parking Spot",
+        "Storage",
+        "Shared",
+    ]
+    is_available = listing["avdate"] != "No Vacancy"
+    return is_housing & is_available
 
 
 class RFasterListingSummary(BaseModel):
@@ -124,7 +162,7 @@ class RFasterListingSummary(BaseModel):
     raw_sq_feet: Optional[str]
     sq_feet: Optional[int]
     availability: str
-    avdate: str
+    avdate: Optional[dt.date]
     neighbourhood: Optional[str] = Field(alias="location")
     rented: Optional[str]
     thumb: str
@@ -185,7 +223,7 @@ def get_listings_page(city_id: int = 1, page: int = 0) -> List[RFasterListingSum
     results = [
         RFasterListingSummary(**_parse_listing(result))
         for result in data["listings"]
-        if _is_housing(result)
+        if _is_valid(result)
     ]
     return results
 
