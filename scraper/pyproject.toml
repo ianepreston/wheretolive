@@ -9,7 +9,7 @@ description = "Scrape real estate data"
 authors = ["Ian Preston"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.1,<4.0"
 
 gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
@@ -37,3 +37,4 @@ darglint = "^1.8.0"
 reorder-python-imports = "^2.5.0"
 numpydoc = "^1.1.0"
 jupyterlab = "^3.0.16"
+pandas = "^1.2.4"
