@@ -28,8 +28,26 @@ def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     """
     # clean out commentary. For example, one listing was "about 750", I want that
     # to just say 750
-    listing["sq_feet"] = re.sub("[^0-9]", "", listing["sq_feet"])
-    if not listing["sq_feet"]:
+    # Keep the raw square footage in case there's a parsing error I need to fix
+    listing["raw_sq_feet"] = listing["sq_feet"]
+    # Some of them do addition, I'm not dealing with that right now
+    if "plus" in listing["sq_feet"].lower():
+        listing["sq_feet"] = ""
+    # Listing seems to treat "0" and none as interchangeable
+    listing["sq_feet"] = re.sub(
+        "[A-Za-z~\.\ <>,]", "", listing["sq_feet"]  # noqa: W605
+    )
+    if listing["sq_feet"] == "0":
+        listing["sq_feet"] = None
+    elif not listing["sq_feet"]:
+        listing["sq_feet"] = None
+    # Some listings put ranges like 750 - 900. Just drop those for now
+    # we'll still have the raw string
+    try:
+        listing["sq_feet"] = int(listing["sq_feet"])
+    except ValueError:
+        listing["sq_feet"] = None
+    except TypeError:
         listing["sq_feet"] = None
     # Multiple listings can share an id, like if a building has different types of
     # units. The site generates a _ and a number after the link for these listings.
@@ -103,6 +121,7 @@ class RFasterListingSummary(BaseModel):
     title: str
     price: int
     listing_type: str = Field(alias="type")
+    raw_sq_feet: Optional[str]
     sq_feet: Optional[int]
     availability: str
     avdate: str
