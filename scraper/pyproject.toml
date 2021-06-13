@@ -1,0 +1,40 @@
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry]
+name = "scraper"
+version = "0.1.0"
+description = "Scrape real estate data"
+authors = ["Ian Preston"]
+
+[tool.poetry.dependencies]
+python = "^3.7.1,<4.0"
+
+gunicorn = "^20.0.4"
+uvicorn = "^0.11.3"
+requests = "^2.25.1"
+geocoder = "^1.38.1"
+fastapi = "^0.65.1"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "5.3.5"
+coverage = { version = "5.0.3", extras = ["toml"]}
+black = "^19.10b0"
+flake8 = "^3.9.2"
+safety = "^1.10.3"
+mypy = "^0.812"
+typeguard = "^2.12.0"
+pre-commit = "^2.12.1"
+pre-commit-hooks = "^4.0.1"
+flake8-bandit = "^2.1.2"
+flake8-bugbear = "^21.4.3"
+flake8-docstrings = "^1.6.0"
+flake8-rst-docstrings = "^0.2.3"
+pep8-naming = "^0.11.1"
+darglint = "^1.8.0"
+reorder-python-imports = "^2.5.0"
+numpydoc = "^1.1.0"
+jupyterlab = "^3.0.16"
+pandas = "^1.2.4"

@@ -1,0 +1,9 @@
+[flake8]
+select = B,B9,BLK,C,E,F,I,S,W,D
+docstring-convention = numpy
+ignore = E203,E501,W503,DAR401,DAR103
+per-file-ignores = tests/*:S101,__init__.py:F401
+max-line-length=88
+application-import-names = scraper, tests
+import-order-style = google
+max-complexity = 10
