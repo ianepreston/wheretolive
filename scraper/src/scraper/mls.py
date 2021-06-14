@@ -1,4 +1,9 @@
-"""Scrape data from MLS.ca."""
+# type: ignore
+"""Scrape data from MLS.ca.
+
+The format for the JSON that comes in from MLS is annoying to specify, so I'm turning
+off type validation for this module :/
+"""
 import datetime as dt
 import time
 from typing import Dict
@@ -26,7 +31,7 @@ def _get_city(city_name: str = "Calgary, Canada") -> geocoder.api.OsmQuery:
     return geocoder.osm(city_name)
 
 
-def is_valid_listing(listing: Dict) -> bool:
+def is_valid_listing(listing: Dict[str, Dict[str, str]]) -> bool:
     """Check if we want to include this listing.
 
     Parameters
@@ -87,7 +92,7 @@ def _parse_bedrooms(bed_key: str) -> Tuple[int, int]:
     return (int(above), int(below))
 
 
-def _parse_date(date_key: str) -> dt.datetime:
+def _parse_date(date_key: Optional[str]) -> Optional[dt.datetime]:
     """Read a text date into a datetime.
 
     Parameters
@@ -176,14 +181,6 @@ def _mls_scrape_page(
     language: ["English", "French"] default English
         Result language
 
-    TODO
-    ----
-    Add function parameters
-    document the payload
-    Return a pydantic model
-    validate data
-    figure out schema
-    basically everything
     """
     languages = {"English": "1", "French": "2"}
     g = _get_city()
