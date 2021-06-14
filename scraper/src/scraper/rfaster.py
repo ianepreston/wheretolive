@@ -4,6 +4,8 @@ import json
 import re
 import time
 import urllib.request
+from copy import deepcopy
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -25,6 +27,7 @@ def _avdate_parser(avdate: str) -> Optional[dt.date]:
     Optional[dt.date]
         Parsed date if possible or None
     """
+    clean_date: Optional[dt.date]
     today = dt.date.today()
     if avdate == "Immediate":
         clean_date = today
@@ -41,7 +44,76 @@ def _avdate_parser(avdate: str) -> Optional[dt.date]:
     return clean_date
 
 
-def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
+def _sq_foot_parser(sq_feet: str) -> Optional[int]:
+    """Parse square footage.
+
+    Parameters
+    ----------
+    sq_feet: str
+        The raw input of square footage
+
+    Returns
+    -------
+    Optional[int]
+        Square footage as an integer if it can be parsed, or None
+    """
+    # Some of them do addition, I'm not dealing with that right now
+    if "plus" in sq_feet.lower():
+        sq_feet = ""
+    # Listing seems to treat "0" and none as interchangeable
+    sq_feet = re.sub("[A-Za-z~\.\ <>,]", "", sq_feet)  # noqa: W605
+    if sq_feet == "0":
+        return None
+    elif not sq_feet:
+        return None
+    # Some listings put ranges like 750 - 900. Just drop those for now
+    # we'll still have the raw string
+    try:
+        parsed_sq_feet = int(sq_feet)
+    except ValueError:
+        return None
+    except TypeError:
+        return None
+    return parsed_sq_feet
+
+
+def _parse_listing_id(id_str: str, link: str) -> str:
+    """Parse the listing id from its link.
+
+    Multiple listings can share an id, like if a building has different types of
+    units. The site generates a _ and a number after the link for these listings.
+    It doesn't do anything to the presentation of the page, presumably it's just for
+    analytics, but I can use it to make a unique id per listing. If there isn't an
+    underscore, that's a single listing, so just make it _0
+
+    Parameters
+    ----------
+    id: str
+        The original id from the JSON
+    link: str
+        The url for the listing
+
+    Returns
+    -------
+    str:
+        An id that accounts for multiple listings per page
+    """
+    rgx = re.compile(r"^.*\/([0-9_]*$)")
+    match_attempt = rgx.match(link)
+    if not match_attempt:
+        raise ValueError(f"Couldn't parse link from {link}")
+    link_end = match_attempt.groups()[0]
+    if "_" in link_end:
+        base, decimal = link_end.split("_")
+        id_str = f"{base}_{decimal}"
+    else:
+        id_str = f"{id_str}_0"
+    return id_str
+
+
+def _parse_listing(  # noqa: C901
+    listing_in: Dict[str, Optional[str]]
+) -> Dict[str, Any]:
     """Do some pre-validation and parsing on rentfaster listing.
 
     Run this before passing to pydantic
@@ -56,42 +128,25 @@ def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     Dict
         The listing with some post-processing applied
     """
-    listing["avdate"] = _avdate_parser(listing["availability"])
+    listing: Dict[str, Any] = deepcopy(listing_in)
+    availability: Optional[str] = listing["availability"]
+    if availability is None:
+        listing["avdate"] = None
+    else:
+        listing["avdate"] = _avdate_parser(availability)
     # clean out commentary. For example, one listing was "about 750", I want that
     # to just say 750
     # Keep the raw square footage in case there's a parsing error I need to fix
     listing["raw_sq_feet"] = listing["sq_feet"]
-    # Some of them do addition, I'm not dealing with that right now
-    if "plus" in listing["sq_feet"].lower():
-        listing["sq_feet"] = ""
-    # Listing seems to treat "0" and none as interchangeable
-    listing["sq_feet"] = re.sub(
-        "[A-Za-z~\.\ <>,]", "", listing["sq_feet"]  # noqa: W605
-    )
-    if listing["sq_feet"] == "0":
-        listing["sq_feet"] = None
-    elif not listing["sq_feet"]:
-        listing["sq_feet"] = None
-    # Some listings put ranges like 750 - 900. Just drop those for now
-    # we'll still have the raw string
-    try:
-        listing["sq_feet"] = int(listing["sq_feet"])
-    except ValueError:
-        listing["sq_feet"] = None
-    except TypeError:
-        listing["sq_feet"] = None
-    # Multiple listings can share an id, like if a building has different types of
-    # units. The site generates a _ and a number after the link for these listings.
-    # It doesn't do anything to the presentation of the page, presumably it's just for
-    # analytics, but I can use it to make a unique id per listing. If there isn't an
-    # underscore, that's a single listing, so just make it _0
-    rgx = re.compile(r"^.*\/([0-9_]*$)")
-    link_end = rgx.match(listing["link"]).groups()[0]
-    if "_" in link_end:
-        base, decimal = link_end.split("_")
-        listing["id"] = f"{base}_{decimal}"
+    if listing["sq_feet"] is not None:
+        listing["sq_feet"] = _sq_foot_parser(listing["sq_feet"])
+
+    if (listing["id"] is not None) & (listing["link"] is not None):
+        listing["id"] = _parse_listing_id(listing["id"], listing["link"])
     else:
-        listing["id"] = f"{listing['id']}_0"
+        raise ValueError(
+            f"ID: {listing['id']} Link: {listing['link']} validation error"
+        )
     # There doesn't appear to be any consistency between listing bedroom as
     # "1 + Den" and listing bedroom as "1" and Den as "yes", let's consolidate that
     # clean up den first, assume blank is No
@@ -127,7 +182,7 @@ def _parse_listing(listing: Dict) -> Dict:  # noqa: C901
     return listing
 
 
-def _is_valid(listing: Dict) -> bool:
+def _is_valid(listing: Dict[str, str]) -> bool:
     """Check that this isn't for a parking space or something.
 
     Parameters
