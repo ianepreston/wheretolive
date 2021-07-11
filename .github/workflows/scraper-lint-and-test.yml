@@ -3,7 +3,7 @@ name: Scraper python package
 on:
     push:
         paths:
-            - '/scraper/*'
+            - 'scraper/**'
 jobs:
     build:
         runs-on: ubuntu-latest
