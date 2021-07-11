@@ -4,10 +4,9 @@ https://fastapi.tiangolo.com/
 """
 from typing import List
 
+import mls
+import rfaster
 from fastapi import FastAPI
-
-from scraper import mls
-from scraper import rfaster
 
 app = FastAPI()
 
