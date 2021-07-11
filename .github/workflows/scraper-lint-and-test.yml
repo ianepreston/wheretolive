@@ -4,6 +4,7 @@ on:
     push:
         paths:
             - 'scraper/**'
+            - '.github/workflows/scraper-list-and-test.yml'
 jobs:
     build:
         runs-on: ubuntu-latest
