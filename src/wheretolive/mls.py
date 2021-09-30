@@ -14,6 +14,7 @@ from typing import Tuple
 import geocoder
 import requests
 from pydantic import BaseModel
+from pydantic import ValidationError
 
 
 def _get_city(city_name: str = "Calgary, Canada") -> geocoder.api.OsmQuery:
@@ -31,7 +32,7 @@ def _get_city(city_name: str = "Calgary, Canada") -> geocoder.api.OsmQuery:
     return geocoder.osm(city_name)
 
 
-def is_valid_listing(listing: Dict[str, Dict[str, str]]) -> bool:
+def _is_valid(listing: Dict[str, Dict[str, str]]) -> bool:
     """Check if we want to include this listing.
 
     Parameters
@@ -219,9 +220,15 @@ def _mls_scrape_page(
     r = requests.post(uri, data=payload)
     if r.ok:
         results = r.json()["Results"]
-        return [
-            _parse_listing(result) for result in results if is_valid_listing(result)
-        ]
+        results_list = []
+        for listing in results:
+            if _is_valid(listing):
+                # Some of them still end up weird, just ignore those
+                try:
+                    results_list.append(_parse_listing(listing))
+                except ValidationError:
+                    pass
+        return results_list
     else:
         raise RuntimeError(f"failed for price range {price_min}, {price_max}")
 
@@ -246,7 +253,7 @@ def get_all_listings() -> List[MLSListing]:
         top_price = max(listing.price for listing in listings)
         # Could probably do the exact price, but just to be safe
         price_min = int(top_price - 1_000)
-        time.sleep(5.0)
+        time.sleep(1)
         listings = _mls_scrape_page(price_min=price_min)
         listings = [
             listing for listing in listings if listing.mls_id not in scraped_ids

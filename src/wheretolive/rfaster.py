@@ -10,6 +10,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+import pydantic
 from pydantic import BaseModel
 from pydantic import Field
 
@@ -273,12 +274,15 @@ def get_listings_page(city_id: int = 1, page: int = 0) -> List[RFasterListingSum
     # other custom schemes
     url = f"https://www.rentfaster.ca/api/search.json?proximity_type=location-city&novacancy=0&cur_page={page}&city_id={city_id}"  # noqa: E510 B950
     r = urllib.request.urlopen(url)  # noqa: S310
-    data = json.loads(r.read())
-    results = [
-        RFasterListingSummary(**_parse_listing(result))
-        for result in data["listings"]
-        if _is_valid(result)
-    ]
+    data = json.loads(r.read())["listings"]
+    results = []
+    for listing in data:
+        if _is_valid(listing):
+            # Some of them still end up weird, just ignore those
+            try:
+                results.append(RFasterListingSummary(**_parse_listing(listing)))
+            except pydantic.ValidationError:
+                pass
     return results
 
 
@@ -304,7 +308,7 @@ def get_all_listings(city_id: int = 1) -> List[RFasterListingSummary]:
     listings.extend(page_list)
     while page_list:
         # be polite, don't hammer the server
-        time.sleep(5)
+        time.sleep(1)
         page += 1
         page_list = get_listings_page(city_id=city_id, page=page)
         listings.extend(page_list)
