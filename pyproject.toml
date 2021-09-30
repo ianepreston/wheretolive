@@ -22,6 +22,9 @@ Changelog = "https://github.com/ianepreston/wheretolive/releases"
 [tool.poetry.dependencies]
 python = "^3.6.1"
 click = "^8.0.1"
+pydantic = "^1.8.2"
+requests = "^2.26.0"
+geocoder = "^1.38.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
