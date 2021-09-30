@@ -16,12 +16,11 @@ except ImportError:
     Please install it using the following command:
 
     {sys.executable} -m pip install nox-poetry"""
-    raise SystemExit(dedent(message))
+    raise SystemExit(dedent(message)) from None
 
 
 package = "wheretolive"
-python_versions = ["3.9", "3.8", "3.7", "3.6"]
-nox.needs_version = ">= 2021.6.6"
+python_versions = ["3.9"]
 nox.options.sessions = (
     "pre-commit",
     "safety",
@@ -40,8 +39,10 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
     session's virtual environment. This allows pre-commit to locate hooks in
     that environment when invoked from git.
 
-    Args:
-        session: The Session object.
+    Parameters
+    ----------
+    session: Session
+        The Session object.
     """
     if session.bin is None:
         return
@@ -134,7 +135,7 @@ def tests(session: Session) -> None:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
     finally:
         if session.interactive:
-            session.notify("coverage", posargs=[])
+            session.notify("coverage")
 
 
 @session
