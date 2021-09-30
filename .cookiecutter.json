@@ -1,0 +1,12 @@
+{
+    "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+    "author": "Ian Preston",
+    "development_status": "Development Status :: 1 - Planning",
+    "email": "ian@nothankyou.com",
+    "friendly_name": "Where to Live",
+    "github_user": "ianepreston",
+    "license": "GPL-3.0",
+    "package_name": "wheretolive",
+    "project_name": "wheretolive",
+    "version": "0.0.0"
+}
