@@ -13,3 +13,12 @@
             path: data
             state: directory
             mode: '0755'
+      - name: Create isochrone directory
+        ansible.builtin.file:
+            path: data/isochrone
+            state: directory
+            mode: '0755'
+      - name: Create address json
+        template:
+            src: addresses.json.j2
+            dest: data/isochrone/addresses.json
