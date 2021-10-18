@@ -22,3 +22,7 @@
         template:
             src: addresses.json.j2
             dest: data/isochrone/addresses.json
+      - name: Create coordinates json
+        template:
+            src: coordinates.json.j2
+            dest: data/isochrone/coordinates.json
