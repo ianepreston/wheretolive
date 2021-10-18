@@ -1,0 +1,15 @@
+---
+- name: Setup the environment for development
+  hosts: localhost
+  vars_files:
+      - vars.yml
+  tasks:
+      - name: Copy in template .env
+        template:
+            src: env.j2
+            dest: .env
+      - name: Create data directory
+        ansible.builtin.file:
+            path: data
+            state: directory
+            mode: '0755'

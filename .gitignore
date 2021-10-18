@@ -8,3 +8,12 @@
 /docs/_build/
 /src/*.egg-info/
 __pycache__/
+
+# Ansible vault password file
+vault_password
+
+# Don't commit any downloaded or created data
+data
+
+# .env can contain secrets, populate using ansible template
+.env
