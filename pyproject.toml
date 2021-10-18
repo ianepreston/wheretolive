@@ -29,11 +29,11 @@ fastparquet = "^0.7.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
-coverage = {extras = ["toml"], version = "^5.4"}
+coverage = {extras = ["toml"], version = "^6.0"}
 safety = "^1.10.3"
 mypy = "^0.910"
 typeguard = "^2.12.1"
-xdoctest = {extras = ["colors"], version = "^0.15.5"}
+xdoctest = {extras = ["colors"], version = "^0.15.10"}
 sphinx = "^4.1.1"
 sphinx-autobuild = "^2021.3.14"
 pre-commit = "^2.13.0"
@@ -47,7 +47,7 @@ pep8-naming = "^0.12.0"
 darglint = "^1.8.0"
 reorder-python-imports = "^2.5.0"
 pre-commit-hooks = "^4.0.1"
-sphinx-rtd-theme = "^0.5.2"
+sphinx-rtd-theme = "^1.0.0"
 sphinx-click = "^3.0.1"
 Pygments = "^2.9.0"
 python-dotenv = "^0.19.0"
