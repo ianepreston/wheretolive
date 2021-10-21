@@ -26,6 +26,13 @@
         template:
             src: coordinates.json.j2
             dest: data/isochrone/coordinates.json
+      - name: Install open streetmap tools
+        become: false
+        yay:
+            name: 'osmctools'
+            state: present
+        with_items:
+            - 'osmctools'
       - name: Enable docker service
         become: true
         systemd:
