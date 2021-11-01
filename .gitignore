@@ -17,3 +17,7 @@ data
 
 # .env can contain secrets, populate using ansible template
 .env
+
+# Ignore notebook cruft
+notebooks/cache
+notebooks/.ipynb_checkpoints

@@ -13,3 +13,48 @@
             path: data
             state: directory
             mode: '0755'
+      - name: Create isochrone directory
+        ansible.builtin.file:
+            path: data/isochrone
+            state: directory
+            mode: '0755'
+      - name: Create places json
+        template:
+            src: places.json.j2
+            dest: data/isochrone/places.json
+      - name: Install open streetmap tools
+        become: false
+        yay:
+            name: 'osmctools'
+            state: present
+        with_items:
+            - 'osmctools'
+      - name: Enable docker service
+        become: true
+        systemd:
+            name: docker
+            enabled: yes
+            state: started
+      - name: Start geo jupyter
+        become: true
+        docker_container:
+            name: geo-jupyter
+            hostname: geo-jupyter
+            image: gboeing/osmnx
+            state: started
+            container_default_behavior: compatibility
+            user: root
+            env:
+                TZ: 'America/Edmonton'
+                NB_USER: ipreston
+                NB_UID: '1001'
+                NB_GID: '1002'
+                CHOWN_HOME: 'yes'
+            volumes:
+                - ./data:/home/jovyan/work/data
+                - ./notebooks:/home/jovyan/work/notebooks
+            published_ports:
+                - 8888:8888
+            command:
+                "jupyter lab --ip='0.0.0.0' --port=8888 --no-browser
+                --NotebookApp.token='' --NotebookApp.password='' --allow-root"
