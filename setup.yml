@@ -18,14 +18,10 @@
             path: data/isochrone
             state: directory
             mode: '0755'
-      - name: Create address json
+      - name: Create places json
         template:
-            src: addresses.json.j2
-            dest: data/isochrone/addresses.json
-      - name: Create coordinates json
-        template:
-            src: coordinates.json.j2
-            dest: data/isochrone/coordinates.json
+            src: places.json.j2
+            dest: data/isochrone/places.json
       - name: Install open streetmap tools
         become: false
         yay:
