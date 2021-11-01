@@ -1,1 +1,2 @@
 * text=auto eol=lf
+vars.yml diff=ansible-vault merge=binary
