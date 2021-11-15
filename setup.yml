@@ -58,3 +58,39 @@
             command:
                 "jupyter lab --ip='0.0.0.0' --port=8888 --no-browser
                 --NotebookApp.token='' --NotebookApp.password='' --allow-root"
+
+- name: Setup the hosted environment
+  hosts: mars
+  vars_files:
+      - vars.yml
+  tasks:
+      - name: Create where to live docker network
+        become: true
+        community.general.docker_network:
+            name: 'wheretolive_network'
+
+      - name: Start postgis container
+        become: true
+        docker_container:
+            name: wheretolive-postgis
+            hostname: wheretolive-postgis
+            image: postgis/postgis
+            user: 1000:1000
+            networks:
+                - name: 'wheretolive_network'
+            network_mode: 'wheretolive_network'
+            state: started
+            container_default_behavior: compatibility
+            env:
+                TZ: 'America/Edmonton'
+                PGID: '1000'
+                PUID: '1000'
+                UMASK_SET: '022'
+                POSTGRES_PASSWORD: '{{ env_vars.POSTGIS_PASS }}'
+            restart_policy: unless-stopped
+            volumes:
+                - '/home/ansible/docker_conf/wheretolive_postgis:/var/lib/postgresql/data'
+            published_ports:
+                - 5432:5432
+            labels:
+                com.centurylinklabs.watchtower.enable: 'true'
