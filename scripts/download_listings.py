@@ -2,6 +2,8 @@
 
 Just saves them to the data folder. Separate logic will need to be used to provision
 to a database or cloud data store.
+
+Ok nevermind, for now I'm staging MLS stuff here too. Will refactor this later.
 """
 import datetime as dt
 import time
@@ -9,6 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from wheretolive.ingest_mls import ingest_mls
 from wheretolive.mls import _mls_scrape_page
 from wheretolive.rfaster import get_listings_page
 
@@ -75,3 +78,5 @@ while listings or price_min == 0:
         # Could probably do the exact price, but just to be safe
         price_min = int(top_price - 1_000)
         time.sleep(1)
+
+ingest_mls(dt.date.today())
