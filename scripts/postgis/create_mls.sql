@@ -1,0 +1,26 @@
+-- Create tables for the raw mls data
+CREATE TABLE IF NOT EXISTS public.mls (
+  mls_id INTEGER NOT NULL,
+  mls_number CHARACTER(8) NOT NULL,
+  listing_description VARCHAR(5000),
+  bedrooms_above SMALLINT,
+  bedrooms_below SMALLINT,
+  bedrooms SMALLINT,
+  bathrooms SMALLINT,
+  sq_feet_in REAL,
+  listing_type VARCHAR(50),
+  amenities VARCHAR(300),
+  current_price REAL,
+  lowest_price REAL,
+  highest_price REAL,
+  property_type VARCHAR(50),
+  listing_address VARCHAR(200),
+  latlong GEOGRAPHY(POINT),
+  ownership_type VARCHAR(50),
+  parking VARCHAR(300),
+  lot_size VARCHAR(300),
+  postal_code CHARACTER(6),
+  link VARCHAR(200),
+  first_scrape_date DATE,
+  latest_scrape_date DATE
+);
