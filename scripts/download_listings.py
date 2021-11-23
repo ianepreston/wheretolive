@@ -11,8 +11,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from wheretolive.ingest_mls import ingest_mls
-from wheretolive.mls import _mls_scrape_page
 from wheretolive.rfaster import get_listings_page
 
 today = f"{dt.date.today():%Y-%m-%d}"
@@ -45,38 +43,3 @@ while page_list or rfaster_page == 0:
         page_df.to_parquet(filepath, engine="fastparquet")
         rfaster_page += 1
         time.sleep(1)
-
-mls_dir = data_dir / "mls"
-mls_dir.mkdir(exist_ok=True)
-price_min = 0
-listings = None
-while listings or price_min == 0:
-    filename = f"mls_{today}_minprice_{str(price_min).zfill(8)}.pq"
-    filepath = mls_dir / filename
-    listings = _mls_scrape_page(price_min=price_min)
-    # Don't think I can easily skip existing files since I don't know my increment
-    if listings:
-        listings_df = (
-            pd.DataFrame([listing.__dict__ for listing in listings])
-            .assign(
-                price_change_dt=lambda df: pd.to_datetime(
-                    df["price_change_dt"], format="%Y-%m-%d"
-                )
-            )
-            .assign(extract_date=dt.date.today())
-            .assign(
-                extract_date=lambda df: pd.to_datetime(
-                    df["extract_date"], format="%Y-%m-%d"
-                )
-            )
-        )
-        listings_df.to_parquet(filepath, engine="fastparquet")
-        top_price = listings_df["price"].max()
-        # Break out of my loop if I'm just grabbing one listing over and over
-        if top_price - 1_000 == price_min:
-            break
-        # Could probably do the exact price, but just to be safe
-        price_min = int(top_price - 1_000)
-        time.sleep(1)
-
-ingest_mls(dt.date.today())
