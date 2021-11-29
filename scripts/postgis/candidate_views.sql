@@ -17,4 +17,5 @@ WHERE
   AND bedrooms >= 2
   AND gf_work_car_30 = TRUE
   AND brother_car_40 = TRUE
+ORDER BY mls_insert_dt DESC
 ;
