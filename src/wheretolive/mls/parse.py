@@ -12,16 +12,9 @@ import pandas as pd
 
 from wheretolive.logconf import get_logger
 from wheretolive.mls.common import _find_base_dir
+from wheretolive.mls.common import _find_scrapes_dir
 
 logger = get_logger(__name__)
-
-
-def _find_scrapes_dir(date: dt.date = None) -> Path:
-    """Where to grab scrapes for a day or save."""
-    if date is None:
-        date = dt.date.today()
-    datestr: str = f"{date:%Y-%m-%d}"
-    return _find_base_dir() / datestr
 
 
 def _find_raw_zips(date: dt.date = None) -> List[Path]:
@@ -123,6 +116,10 @@ class _ListingCleaner:
             return None
         self._cleaned["mls_id"] = self.raw_listing.get("Id")
         self._cleaned["mls_number"] = self.raw_listing.get("MlsNumber")
+        self._cleaned["stories"] = self.raw_listing.get("Building").get("StoriesTotal")
+        # Want to be able to parse this as None when converting to integer
+        if not self._cleaned["stories"]:
+            self._cleaned["stories"] = None
         self._cleaned["listing_description"] = self.raw_listing.get("PublicRemarks")
         raw_bedrooms = self.raw_listing.get("Building").get("Bedrooms")
         if raw_bedrooms is None:
@@ -134,8 +131,8 @@ class _ListingCleaner:
                 self._cleaned["bedrooms_above"],
                 self._cleaned["bedrooms_below"],
             ) = self._parse_bedrooms(raw_bedrooms)
-            self._cleaned["bedrooms"] = (
-                self._cleaned["bedrooms_above"] + self._cleaned["bedrooms_below"]
+            self._cleaned["bedrooms"] = int(self._cleaned["bedrooms_above"]) + int(
+                self._cleaned["bedrooms_below"]
             )
         self._cleaned["bathrooms"] = self.raw_listing.get("Building").get(
             "BathroomTotal"
@@ -144,7 +141,12 @@ class _ListingCleaner:
         if raw_sq_feet is None:
             self._cleaned["sq_feet_in"] = None
         else:
-            self._cleaned["sq_feet_in"] = raw_sq_feet.replace(" sqft", "")
+            # Almost everything lists in square feet. Annoying
+            if "m2" in raw_sq_feet:
+                sqft = float(raw_sq_feet.replace(" m2", "")) * 10.7639
+                self._cleaned["sq_feet_in"] = f"{sqft}"
+            else:
+                self._cleaned["sq_feet_in"] = raw_sq_feet.replace(" sqft", "")
 
         self._cleaned["listing_type"] = self.raw_listing.get("Building").get("Type")
         self._cleaned["amenities"] = self.raw_listing.get("Building").get("Ammenities")
@@ -152,7 +154,7 @@ class _ListingCleaner:
             "PriceUnformattedValue"
         )
         self._cleaned["property_type"] = self.raw_listing.get("Property").get("Type")
-        self._cleaned["address"] = (
+        self._cleaned["listing_address"] = (
             self.raw_listing.get("Property").get("Address").get("AddressText")
         )
         self._cleaned["longitude"] = (
@@ -165,6 +167,9 @@ class _ListingCleaner:
             "OwnershipType"
         )
         self._cleaned["parking"] = self.raw_listing.get("Property").get("ParkingType")
+        self._cleaned["parking_spaces"] = self.raw_listing.get("Property").get(
+            "ParkingSpaceTotal"
+        )
         self._cleaned["lot_size"] = self.raw_listing.get("Land").get("SizeTotal")
         self._cleaned["postal_code"] = self.raw_listing.get("PostalCode")
         self._cleaned[
@@ -173,6 +178,15 @@ class _ListingCleaner:
         self._cleaned["price_change_dt"] = self._parse_date(
             self.raw_listing.get("PriceChangeDateUTC")
         )
+        raw_timestamp = self.raw_listing.get("InsertedDateUTC")
+        if raw_timestamp is not None:
+            # Something about the formatting here has the epoch start wrong
+            # this corrects it
+            clean_timestamp = dt.datetime.fromtimestamp(int(raw_timestamp) / 10_000_000)
+            clean_timestamp = clean_timestamp.replace(year=clean_timestamp.year - 1969)
+        else:
+            clean_timestamp = None
+        self._cleaned["mls_insert_dt"] = clean_timestamp
         return None
 
     @property
@@ -193,18 +207,7 @@ def _parse_listings(date: dt.date = None) -> pd.DataFrame:
         if cleaned_listing is not None:
             cleaned_listings.append(cleaned_listing)
     _ = None
-    listings_df = (
-        pd.DataFrame(cleaned_listings)
-        .assign(
-            price_change_dt=lambda df: pd.to_datetime(
-                df["price_change_dt"], format="%Y-%m-%d"
-            )
-        )
-        .assign(scrape_date=date)
-        .assign(
-            scrape_date=lambda df: pd.to_datetime(df["scrape_date"], format="%Y-%m-%d")
-        )
-    )
+    listings_df = pd.DataFrame(cleaned_listings).assign(scrape_dt=date)
     numeric_cols = [
         "mls_id",
         "bedrooms_above",
@@ -213,11 +216,16 @@ def _parse_listings(date: dt.date = None) -> pd.DataFrame:
         "bathrooms",
         "sq_feet_in",
         "price",
-        "longitude",
-        "latitude",
+    ]
+    datetime_cols = [
+        "price_change_dt",
+        "scrape_dt",
+        "mls_insert_dt",
     ]
     for col in numeric_cols:
         listings_df[col] = pd.to_numeric(listings_df[col])
+    for col in datetime_cols:
+        listings_df[col] = pd.to_datetime(listings_df[col], format="%Y-%m-%d")
     return listings_df
 
 
@@ -256,5 +264,5 @@ def parse_scrapes(force_overwrite: bool = False):
 
 
 if __name__ == "__main__":
-    parse_scrapes()
+    parse_scrapes(True)
     print("hurray!")

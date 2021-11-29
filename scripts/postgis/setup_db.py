@@ -20,17 +20,11 @@ def drop_mls():
     exec_sql("drop_mls.sql")
 
 
-def create_mls_stage():
-    """Create the staging database and views for daily MLS scrapes."""
-    exec_sql("create_mls_stage.sql")
-
-
 def create_mls():
     """Create the final databse for MLS scrapes."""
     exec_sql("create_mls.sql")
 
 
 if __name__ == "__main__":
-    # drop_mls()
+    drop_mls()
     create_mls()
-    create_mls_stage()
