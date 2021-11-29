@@ -29,6 +29,7 @@ fastparquet = "^0.7.1"
 python-dotenv = "^0.19.1"
 psycopg2-binary = "^2.9.2"
 SQLAlchemy = "^1.4.27"
+dropbox = "^11.25.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

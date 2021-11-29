@@ -235,6 +235,19 @@ toml = "*"
 pipenv = ["pipenv"]
 
 [[package]]
+name = "dropbox"
+version = "11.25.0"
+description = "Official Dropbox API Client"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = ">=2.16.2"
+six = ">=1.12.0"
+stone = ">=2"
+
+[[package]]
 name = "fastparquet"
 version = "0.7.2"
 description = "Python support for Parquet file format"
@@ -652,6 +665,14 @@ importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pre-commit"
@@ -1134,6 +1155,18 @@ importlib-metadata = {version = ">=1.7.0", markers = "python_version < \"3.8\""}
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "stone"
+version = "3.2.1"
+description = "Stone is an interface description language (IDL) for APIs."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ply = ">=3.4"
+six = ">=1.3.0"
+
+[[package]]
 name = "thrift"
 version = "0.15.0"
 description = "Python bindings for the Apache Thrift RPC system"
@@ -1269,7 +1302,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "49d25a34c5486193562bfe11cbb7f3b1713f0cb3208fd206ae0f0fcd4168803c"
+content-hash = "087f9970599bee394ab15a5cc561d6f5983be6c0317de28af48004ac094080bd"
 
 [metadata.files]
 alabaster = [
@@ -1462,6 +1495,11 @@ docutils = [
 dparse = [
     {file = "dparse-0.5.1-py3-none-any.whl", hash = "sha256:e953a25e44ebb60a5c6efc2add4420c177f1d8404509da88da9729202f306994"},
     {file = "dparse-0.5.1.tar.gz", hash = "sha256:a1b5f169102e1c894f9a7d5ccf6f9402a836a5d24be80a986c7ce9eaed78f367"},
+]
+dropbox = [
+    {file = "dropbox-11.25.0-py2-none-any.whl", hash = "sha256:f32c5ae359876305b34ec0c7da9c95d3a5513364f7c682565b820553512b12b0"},
+    {file = "dropbox-11.25.0-py3-none-any.whl", hash = "sha256:f749231831ccc88a01785282c3c1a76826c3982ecde47b44a4ec457e7157fdd0"},
+    {file = "dropbox-11.25.0.tar.gz", hash = "sha256:463e31b4a3ea4b7e6206672bcef2ae1d22652e7eb40aed45eeba2a71a160096f"},
 ]
 fastparquet = [
     {file = "fastparquet-0.7.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:88a1fda51c2f92594bb15d24782736a5a949d9f5f68c7bedbfb6d681d392484c"},
@@ -1769,6 +1807,10 @@ platformdirs = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+]
+ply = [
+    {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
+    {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
 ]
 pre-commit = [
     {file = "pre_commit-2.15.0-py2.py3-none-any.whl", hash = "sha256:a4ed01000afcb484d9eb8d504272e642c4c4099bbad3a6b27e519bd6a3e928a6"},
@@ -2105,6 +2147,11 @@ sqlalchemy = [
 stevedore = [
     {file = "stevedore-3.5.0-py3-none-any.whl", hash = "sha256:a547de73308fd7e90075bb4d301405bebf705292fa90a90fc3bcf9133f58616c"},
     {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
+]
+stone = [
+    {file = "stone-3.2.1-py2-none-any.whl", hash = "sha256:2a50866528f60cc7cedd010def733e8ae9d581d17f967278a08059bffaea3c57"},
+    {file = "stone-3.2.1-py3-none-any.whl", hash = "sha256:76235137c09ee88aa53e8c1e666819f6c20ac8064c4ac6c4ee4194eac0e3b7af"},
+    {file = "stone-3.2.1.tar.gz", hash = "sha256:9bc78b40143b4ef33bf569e515408c2996ffebefbb1a897616ebe8aa6f2d7e75"},
 ]
 thrift = [
     {file = "thrift-0.15.0.tar.gz", hash = "sha256:87c8205a71cf8bbb111cb99b1f7495070fbc9cabb671669568854210da5b3e29"},
