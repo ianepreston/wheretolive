@@ -28,5 +28,8 @@ def update_mls_postgis(scrape_date: dt.date = None):
         mls_df.to_sql(name="mls", con=conn, index=False, if_exists="append")
         logger.info(f"Inserted {len(mls_df):,.0f} records into MLS table")
         update_latlong = 'UPDATE public.mls SET geom = ST_SetSRID(ST_MakePoint("longitude"::double precision, "latitude"::double precision), 4326);'
-        logger.info("Parsed latlong location from latitude and longitude columns")
         conn.execute(update_latlong)
+        logger.info("Parsed latlong location from latitude and longitude columns")
+        refresh_wide = "REFRESH MATERIALIZED VIEW mls_wide;"
+        conn.execute(refresh_wide)
+        logger.info("Refreshed wide materialized view of MLS listings.")
