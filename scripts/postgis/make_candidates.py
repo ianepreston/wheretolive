@@ -1,6 +1,8 @@
 """Run the candidate views SQL script to create views of candidate MLS listings."""
 from pathlib import Path
 
+import sqlalchemy
+
 from wheretolive.postgis import PostGIS
 
 WORKDIR = Path(__file__).resolve().parent
@@ -12,7 +14,7 @@ def exec_sql(query_file: str):
     with open(WORKDIR / query_file, "r") as f:
         sql = f.read()
     with pg_db.begin() as conn:
-        conn.execute(sql)
+        conn.execute(sqlalchemy.text(sql))
 
 
 exec_sql("candidate_views.sql")
