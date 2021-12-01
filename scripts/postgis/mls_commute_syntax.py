@@ -7,7 +7,7 @@ _MODES = ["CAR", "WALK, TRANSIT", "WALK"]
 MODES = [{"val": mode, "label": mode.replace(", ", "_")} for mode in _MODES]
 
 
-PLACES = ["DOWNTOWN", "GF_WORK", "BROTHER"]
+PLACES = ["DOWNTOWN", "GF_WORK", "BROTHER", "TO_BC", "MOMMA_JILL"]
 
 CUTOFF_TIMES = [i for i in range(10, 65, 5)]
 
@@ -92,7 +92,7 @@ def make_sql():
     """Create the full SQL statement for commute logic."""
     return "\n\n\n".join(
         [
-            "DROP VIEW IF EXISTS mls_commutes;",
+            "DROP VIEW IF EXISTS mls_commutes CASCADE;",
             "CREATE OR REPLACE VIEW mls_commutes AS",
             make_all_commute_ctes(),
             make_select(),

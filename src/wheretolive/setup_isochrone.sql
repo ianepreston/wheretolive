@@ -1,5 +1,6 @@
 --- Create isochrone table for commute times
-DROP TABLE IF EXISTS public.isochrones;
+-- DROP TABLE IF EXISTS public.isochrones;
+TRUNCATE TABLE public.isochrones;
 
 CREATE TABLE IF NOT EXISTS public.isochrones (
   place_name VARCHAR(50),
