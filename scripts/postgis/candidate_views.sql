@@ -2,17 +2,17 @@
 DROP VIEW IF EXISTS ian_candidates;
 CREATE OR REPLACE VIEW ian_candidates AS
 SELECT
-  mls_number,
   link,
   price,
   mls_insert_dt,
+  price_change_dt,
   scrape_dt,
-  listing_description,
   downtown_walk_time,
   downtown_walk_transit_time,
   gf_work_car_time,
   brother_car_time,
-  to_bc_car_time
+  to_bc_car_time,
+  listing_description
 FROM mls_wide
 WHERE
   price BETWEEN 300000 AND 650000
@@ -26,7 +26,7 @@ WHERE
   )
   AND listing_type NOT IN ('Duplex', 'Mobile Home')
   AND downtown_walk_transit_40
-ORDER BY mls_insert_dt DESC
+ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 ;
 DROP VIEW IF EXISTS parents_candidates;
 CREATE OR REPLACE VIEW parents_candidates AS
@@ -35,6 +35,7 @@ SELECT
   link,
   price,
   mls_insert_dt,
+  price_change_dt,
   scrape_dt,
   listing_description,
   brother_car_time
@@ -48,7 +49,7 @@ SELECT
         OR parking LIKE '%Underground%'
     )
     AND brother_car_20 = TRUE
-  ORDER BY mls_insert_dt DESC
+  ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 ;
 DROP VIEW IF EXISTS jill_candidates;
 CREATE OR REPLACE VIEW jill_candidates AS
@@ -57,6 +58,7 @@ SELECT
   link,
   price,
   mls_insert_dt,
+  price_change_dt,
   scrape_dt,
   listing_description,
   downtown_walk_time,
@@ -80,5 +82,5 @@ WHERE
   )
   AND momma_jill_car_10 = False
   AND sq_feet_in >= 2000
-ORDER BY mls_insert_dt DESC
+ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 ;
