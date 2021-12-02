@@ -31,24 +31,31 @@ ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 DROP VIEW IF EXISTS parents_candidates;
 CREATE OR REPLACE VIEW parents_candidates AS
 SELECT
-  mls_number,
   link,
   price,
   mls_insert_dt,
   price_change_dt,
   scrape_dt,
-  listing_description,
-  brother_car_time
+  brother_car_time,
+  downtown_car_time,
+  gf_work_car_time,
+  listing_description
   FROM mls_wide
   WHERE
-    price BETWEEN 200000 AND 500000
+    price BETWEEN 300000 AND 550000
+    AND sq_feet_in >= 1000
     AND bathrooms >= 2
-    AND bedrooms >= 2
+    AND bedrooms_above >= 2
+    AND bedrooms <= 3
     AND (
         parking LIKE '%Garage%'
         OR parking LIKE '%Underground%'
     )
     AND brother_car_20 = TRUE
+    AND (
+      (listing_type != 'Apartment' AND stories < 3)
+      OR (listing_type = 'Apartment')
+    )
   ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 ;
 DROP VIEW IF EXISTS jill_candidates;
