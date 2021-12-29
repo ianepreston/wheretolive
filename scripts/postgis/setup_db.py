@@ -33,4 +33,5 @@ def create_rfaster():
 if __name__ == "__main__":
     # drop_mls()
     # create_mls()
-    create_rfaster()
+    # create_rfaster()
+    exec_sql("grocery_distance.sql")

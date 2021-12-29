@@ -10,6 +10,8 @@ SELECT
   downtown_walk_transit_time,
   gf_work_car_time,
   brother_car_time,
+  grocery_store_name,
+  m_to_grocery,
   listing_description
 FROM rfaster_wide
 WHERE
