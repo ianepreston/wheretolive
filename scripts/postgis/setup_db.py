@@ -25,6 +25,12 @@ def create_mls():
     exec_sql("create_mls.sql")
 
 
+def create_rfaster():
+    """Create the final database from rfaster scrapes."""
+    exec_sql("create_rfaster.sql")
+
+
 if __name__ == "__main__":
-    drop_mls()
-    create_mls()
+    # drop_mls()
+    # create_mls()
+    create_rfaster()
