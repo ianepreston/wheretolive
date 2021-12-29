@@ -18,3 +18,4 @@ def exec_sql(query_file: str):
 
 
 exec_sql("candidate_views.sql")
+exec_sql("candidate_views_rfaster.sql")
