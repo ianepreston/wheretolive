@@ -6,6 +6,7 @@ SELECT
   price,
   first_seen_dt,
   scrape_dt,
+  flood_risk,
   downtown_walk_time,
   downtown_walk_transit_time,
   gf_work_car_time,
