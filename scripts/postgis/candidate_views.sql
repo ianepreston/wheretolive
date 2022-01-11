@@ -15,11 +15,12 @@ SELECT
   to_bc_car_time,
   grocery_store_name,
   m_to_grocery,
+  sq_feet_in,
   listing_description
 FROM mls_wide
 WHERE
   price BETWEEN 300000 AND 650000
-  AND bedrooms >= 2
+  AND bedrooms >= 3
   AND gf_work_car_30 = TRUE
   AND brother_car_40 = TRUE
   AND bathrooms >= 2
@@ -27,7 +28,7 @@ WHERE
       parking LIKE '%Garage%'
   OR parking LIKE '%Underground%'
   )
-  AND listing_type NOT IN ('Duplex', 'Mobile Home')
+  AND listing_type NOT IN ('Mobile Home', 'Apartment')
   AND downtown_walk_transit_40
 ORDER BY GREATEST(mls_insert_dt, price_change_dt) DESC
 ;
