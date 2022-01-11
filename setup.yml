@@ -66,8 +66,8 @@
             minute: '15'
             hour: '1'
             job:
-                '/home/ipreston/git/wheretolive/.venv/bin/python
-                /home/ipreston/git/wheretolive/scripts/daily_mls.py'
+                "/usr/bin/env bash -c 'source /home/ipreston/git/wheretolive/.venv/bin/activate && python
+                /home/ipreston/git/wheretolive/scripts/daily_mls.py' > /dev/null 2>&1"
       - name: Create crontab for daily rentfaster run
         become: true
         become_user: ipreston
