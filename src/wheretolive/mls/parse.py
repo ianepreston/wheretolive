@@ -4,15 +4,11 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from typing import List
-from typing import Optional
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
-
 from wheretolive.logconf import get_logger
-from wheretolive.mls.common import _find_base_dir
-from wheretolive.mls.common import _find_scrapes_dir
+from wheretolive.mls.common import _find_base_dir, _find_scrapes_dir
 
 logger = get_logger(__name__)
 
@@ -210,6 +206,7 @@ def _parse_listings(date: dt.date = None) -> pd.DataFrame:
     listings_df = pd.DataFrame(cleaned_listings).assign(scrape_dt=date)
     numeric_cols = [
         "mls_id",
+        "stories",
         "bedrooms_above",
         "bedrooms_below",
         "bedrooms",
