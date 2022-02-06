@@ -203,7 +203,7 @@ def _parse_listings(date: dt.date = None) -> pd.DataFrame:
         if cleaned_listing is not None:
             cleaned_listings.append(cleaned_listing)
     _ = None
-    listings_df = pd.DataFrame(cleaned_listings).assign(scrape_dt=date)
+    listings_df = pd.DataFrame(cleaned_listings).assign(scrape_dt=date).drop_duplicates()
     numeric_cols = [
         "mls_id",
         "stories",

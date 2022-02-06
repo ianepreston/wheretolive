@@ -1,6 +1,6 @@
 -- Create tables for the raw mls data
 CREATE TABLE IF NOT EXISTS public.mls (
-  mls_id INTEGER NOT NULL,
+  mls_id INTEGER NOT NULL PRIMARY KEY,
   mls_number CHARACTER(8) NOT NULL,
   stories INTEGER,
   listing_description VARCHAR(5000),

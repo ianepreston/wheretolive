@@ -2,7 +2,6 @@
 import datetime as dt
 
 import pandas as pd
-
 from wheretolive.logconf import get_logger
 from wheretolive.mls.common import _find_scrapes_dir
 from wheretolive.postgis import PostGIS
@@ -30,6 +29,12 @@ def update_mls_postgis(scrape_date: dt.date = None):
         update_latlong = 'UPDATE public.mls SET geom = ST_SetSRID(ST_MakePoint("longitude"::double precision, "latitude"::double precision), 4326);'
         conn.execute(update_latlong)
         logger.info("Parsed latlong location from latitude and longitude columns")
+    # Try breaking this into chunks
+    with db.begin() as conn:
+        logger.info("Starting materialized view refresh")
         refresh_wide = "REFRESH MATERIALIZED VIEW mls_wide;"
         conn.execute(refresh_wide)
         logger.info("Refreshed wide materialized view of MLS listings.")
+
+if __name__ == "__main__":
+    update_mls_postgis()
