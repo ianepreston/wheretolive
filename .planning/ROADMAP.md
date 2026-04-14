@@ -45,7 +45,11 @@ Plans:
   2. Rentfaster scraping notebook runs from Databricks and writes JSON files to a Volume path organized by date
   3. Running either notebook a second time on the same day does not corrupt or duplicate the raw data
   4. Raw JSON files are browsable via Unity Catalog Volume UI in the workspace
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Add ingest Volume to DAB schema and implement Rentfaster scraping notebook
+- [ ] 02-02-PLAN.md — Implement MLS scraping notebook with Incapsula detection
+- [ ] 02-03-PLAN.md — Deploy bundle, run notebooks on Databricks, and validate scraping results (INGEST-03)
 
 ### Phase 3: SDP Bronze Loading
 **Goal**: A Spark Declarative Pipeline reads raw JSON from Volumes and materializes bronze Delta tables
@@ -120,7 +124,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Infrastructure & DAB Setup | 0/2 | Planned | - |
-| 2. Listing Ingestion | 0/TBD | Not started | - |
+| 2. Listing Ingestion | 0/3 | Planned | - |
 | 3. SDP Bronze Loading | 0/TBD | Not started | - |
 | 4. SDP Silver & Gold Transformations | 0/TBD | Not started | - |
 | 5. Workflow Orchestration | 0/TBD | Not started | - |
