@@ -33,8 +33,8 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The DAB project defines placeholder entries for notebooks, pipelines, and workflows that later phases will populate
 **Plans**: 2 plans
 Plans:
-- [ ] 01-01-PLAN.md — Archive legacy code and create DAB project structure with databricks.yml, resource YAMLs, and placeholder notebooks
-- [ ] 01-02-PLAN.md — Validate, deploy to Databricks workspace, and verify schema and resources exist
+- [x] 01-01-PLAN.md — Archive legacy code and create DAB project structure with databricks.yml, resource YAMLs, and placeholder notebooks
+- [x] 01-02-PLAN.md — Validate, deploy to Databricks workspace, and verify schema and resources exist
 
 ### Phase 2: Listing Ingestion
 **Goal**: Both MLS and Rentfaster scraping notebooks reliably produce raw JSON files in Unity Catalog Volumes
