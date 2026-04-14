@@ -136,7 +136,7 @@ def scrape_rentfaster():
         batch_count += 1
         total_listings += len(listings)
         page += 1
-        time.sleep(1)
+        time.sleep(2 + random.random())
 
     print(f"Rentfaster complete: {batch_count} batches, {total_listings} listings")
     return batch_count
