@@ -1,23 +1,27 @@
+# Databricks Asset Bundle artifacts
+.databricks/
+dist/
+build/
+*.egg-info
+
+# Python
+__pycache__/
+.venv/
+
+# Legacy patterns (still relevant for legacy/ dir)
 .mypy_cache/
 /.coverage
 /.coverage.*
 /.nox/
 /.python-version
 /.pytype/
-/dist/
 /docs/_build/
-/src/*.egg-info/
-__pycache__/
 
-# Ansible vault password file
+# Secrets and data
+.env
+data/
 vault_password
 
-# Don't commit any downloaded or created data
-data
-
-# .env can contain secrets, populate using ansible template
-.env
-
-# Ignore notebook cruft
+# Notebook artifacts
 notebooks/cache
 notebooks/.ipynb_checkpoints
