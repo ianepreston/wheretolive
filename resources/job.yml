@@ -1,0 +1,17 @@
+resources:
+  jobs:
+    daily_pipeline:
+      name: wheretolive_daily
+      tasks:
+        - task_key: mls_scrape
+          notebook_task:
+            notebook_path: ../notebooks/ingestion/mls_scrape.py
+        - task_key: rfaster_scrape
+          notebook_task:
+            notebook_path: ../notebooks/ingestion/rfaster_scrape.py
+        - task_key: run_pipeline
+          depends_on:
+            - task_key: mls_scrape
+            - task_key: rfaster_scrape
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.medallion_pipeline.id}

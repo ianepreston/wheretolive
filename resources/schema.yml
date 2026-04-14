@@ -1,0 +1,9 @@
+resources:
+  schemas:
+    wheretolive_schema:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: |
+        WhereToLive real estate listing data.
+        Uses table name prefixes for medallion layers:
+        bronze_* (raw), silver_* (cleaned), gold_* (presentation-ready).

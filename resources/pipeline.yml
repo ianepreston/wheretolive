@@ -1,0 +1,9 @@
+resources:
+  pipelines:
+    medallion_pipeline:
+      name: wheretolive_medallion
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      libraries:
+        - file:
+            path: ../notebooks/pipeline/medallion.py

@@ -1,0 +1,21 @@
+bundle:
+  name: wheretolive
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: The Unity Catalog catalog to use
+    default: workspace
+  schema:
+    description: The schema for all wheretolive tables
+    default: wheretolive
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-f4a281a2-e8e6.cloud.databricks.com/
+      profile: free-edition
