@@ -11,6 +11,7 @@ dependencies = [
   "requests>=2.32.0",
   "geocoder>=1.38.1",
   "databricks-sdk>=0.40.0",
+  "playwright>=1.40.0",
 ]
 
 [build-system]

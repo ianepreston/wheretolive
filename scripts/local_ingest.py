@@ -16,6 +16,7 @@ import datetime as dt
 import gzip
 import json
 import os
+import random
 import subprocess
 import sys
 import tempfile
@@ -145,6 +146,58 @@ def scrape_rentfaster():
 # MLS scraping
 # ---------------------------------------------------------------------------
 
+def get_incapsula_cookies():
+    """Launch a headless browser to obtain Incapsula session cookies from realtor.ca.
+
+    Incapsula bot protection requires valid session cookies obtained from a real
+    browser visit. This function navigates to realtor.ca, waits for the page
+    (and Incapsula challenge) to complete, then extracts cookies for use with
+    the requests-based API calls.
+
+    Returns
+    -------
+    dict
+        A {name: value} mapping of cookies whose domain contains 'realtor.ca'.
+        Returns an empty dict on failure (graceful degradation).
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("WARNING: playwright not installed — skipping cookie extraction")
+        return {}
+
+    browser = None
+    pw = None
+    try:
+        pw = sync_playwright().start()
+        browser = pw.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            )
+        )
+        page = context.new_page()
+        page.goto("https://www.realtor.ca", wait_until="networkidle", timeout=15000)
+
+        all_cookies = context.cookies()
+        cookies = {
+            c["name"]: c["value"]
+            for c in all_cookies
+            if "realtor.ca" in c.get("domain", "")
+        }
+        return cookies
+    except Exception as e:
+        print(f"WARNING: Cookie extraction failed — {e}")
+        return {}
+    finally:
+        if browser:
+            browser.close()
+        if pw:
+            pw.stop()
+
+
 def get_calgary_bounds():
     """Get Calgary bounding box from geocoder with hardcoded fallback."""
     try:
@@ -157,7 +210,7 @@ def get_calgary_bounds():
         return {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
 
 
-def scrape_mls_page(bounds, price_min=0, price_max=10_000_000, max_attempts=3):
+def scrape_mls_page(bounds, price_min=0, price_max=10_000_000, max_attempts=3, cookies=None):
     """Scrape a single price bracket from MLS API."""
     headers = {
         "accept-encoding": "gzip, deflate, br",
@@ -188,7 +241,7 @@ def scrape_mls_page(bounds, price_min=0, price_max=10_000_000, max_attempts=3):
 
     for attempt in range(1, max_attempts + 1):
         try:
-            r = requests.post(MLS_API_URL, data=payload, headers=headers, timeout=30)
+            r = requests.post(MLS_API_URL, data=payload, headers=headers, cookies=cookies, timeout=30)
             if r.ok:
                 content_type = r.headers.get("content-type", "")
                 if "json" not in content_type and "javascript" not in content_type:
@@ -219,12 +272,15 @@ def scrape_mls():
     bounds = get_calgary_bounds()
     clean_day_folder("mls")
 
+    cookies = get_incapsula_cookies()
+    print(f"  Obtained {len(cookies)} cookies from browser session")
+
     price_min = 0
     batch_count = 0
     total_listings = 0
 
     while True:
-        results = scrape_mls_page(bounds, price_min=price_min)
+        results = scrape_mls_page(bounds, price_min=price_min, cookies=cookies)
         if results is None:
             print("MLS scraping blocked — stopping")
             break
@@ -249,7 +305,7 @@ def scrape_mls():
             else:
                 break
         price_min = next_min
-        time.sleep(1)
+        time.sleep(2 + random.random())
 
     print(f"MLS complete: {batch_count} batches, {total_listings} listings")
     return batch_count
