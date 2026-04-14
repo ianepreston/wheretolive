@@ -46,17 +46,19 @@ VOLUME_BASE = None  # resolved at startup
 
 
 def discover_volume_path():
-    """Find the ingest Volume path by listing volumes in the wheretolive schema."""
+    """Find the ingest Volume path by discovering the wheretolive schema."""
     global VOLUME_BASE
-    volumes = list(W.volumes.list(catalog_name=CATALOG, schema_name=None))
-    for v in volumes:
-        if v.name == "ingest" and "wheretolive" in v.schema_name:
-            VOLUME_BASE = f"/Volumes/{CATALOG}/{v.schema_name}/ingest"
+    # SDK volumes.list requires schema_name — discover schema first
+    # (DAB dev mode prefixes schema names, e.g. dev_ian_e_preston_wheretolive)
+    schemas = list(W.schemas.list(catalog_name=CATALOG))
+    for s in schemas:
+        if "wheretolive" in s.name:
+            VOLUME_BASE = f"/Volumes/{CATALOG}/{s.name}/ingest"
             print(f"Discovered Volume: {VOLUME_BASE}")
             return
     # Fallback: try common dev-mode pattern
     VOLUME_BASE = f"/Volumes/{CATALOG}/wheretolive/ingest"
-    print(f"Volume discovery failed, using fallback: {VOLUME_BASE}")
+    print(f"Schema discovery failed, using fallback: {VOLUME_BASE}")
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +204,8 @@ def get_calgary_bounds():
     """Get Calgary bounding box from geocoder with hardcoded fallback."""
     try:
         g = geocoder.osm("Calgary, Canada")
+        if g.north is None or g.south is None:
+            raise ValueError("geocoder returned None bounds (likely 403)")
         bounds = {"north": g.north, "south": g.south, "east": g.east, "west": g.west}
         print(f"  Calgary bounds from OSM: {bounds}")
         return bounds

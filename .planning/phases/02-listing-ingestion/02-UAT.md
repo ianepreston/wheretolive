@@ -24,26 +24,30 @@ result: pass
 
 ### 2. Local ingest script scrapes Rentfaster and uploads to Volume
 expected: Running `python scripts/local_ingest.py` scrapes Rentfaster listings locally, uploads .json.gz files to `/Volumes/workspace/{schema}/ingest/rfaster/{date}/`, and prints batch counts. Files are visible in Volume via Catalog UI or `databricks fs ls`.
-result: [pending]
+result: pass
+notes: 5 batches, 240 listings uploaded. Volume discovered as `/Volumes/workspace/dev_ian_e_preston_wheretolive/ingest`. Hit 403 on page 6 (rate limiting) — enough data for pipeline development.
 
 ### 3. Local ingest script scrapes MLS and uploads to Volume
 expected: Same script scrapes MLS via price-bracket pagination, uploads .json.gz to `/Volumes/workspace/{schema}/ingest/mls/{date}/`. If Incapsula blocks locally too, script reports the failure clearly.
-result: [pending]
+result: pass
+notes: 2 batches, 200 listings uploaded before Incapsula blocked on batch 3. Blocking reported clearly. Bug found and fixed — geocoder returned None bounds when OSM 403'd instead of falling through to hardcoded Calgary bounds.
 
 ### 4. Local ingest script triggers pipeline after upload
 expected: After scraping, the script runs `databricks bundle run medallion_pipeline`. The command executes (pipeline itself may fail since Phase 3 hasn't built it yet, but the trigger mechanism works).
-result: [pending]
+result: pass
+notes: Pipeline triggered successfully. Failed with `NO_TABLES_IN_PIPELINE` as expected (Phase 3 not built yet). Trigger mechanism confirmed working.
 
 ### 5. Notebook runtime fixes work on Databricks
 expected: Both notebooks get past the configuration cell (no `CONFIG_NOT_AVAILABLE` error). Schema is discovered dynamically. Notebooks fail on scraping (403/Incapsula) but not on configuration.
 result: [pending]
+notes: Requires Databricks cluster execution — not testable locally.
 
 ## Summary
 
 total: 5
-passed: 1
+passed: 4
 issues: 0
-pending: 4
+pending: 1
 skipped: 0
 
 ## Gaps
