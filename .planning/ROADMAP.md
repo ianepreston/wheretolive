@@ -49,7 +49,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Add ingest Volume to DAB schema and implement Rentfaster scraping notebook
 - [x] 02-02-PLAN.md — Implement MLS scraping notebook with Incapsula detection
-- [ ] 02-03-PLAN.md — Deploy bundle, run notebooks on Databricks, and validate scraping results (INGEST-03)
+- [x] 02-03-PLAN.md — Deploy bundle, run notebooks on Databricks, and validate scraping results (INGEST-03)
 
 ### Phase 3: SDP Bronze Loading
 **Goal**: A Spark Declarative Pipeline reads raw JSON from Volumes and materializes bronze Delta tables
