@@ -4,6 +4,7 @@ resources:
       name: wheretolive_medallion
       catalog: ${var.catalog}
       target: ${var.schema}
+      serverless: true
       libraries:
-        - file:
+        - notebook:
             path: ../notebooks/pipeline/medallion.py
