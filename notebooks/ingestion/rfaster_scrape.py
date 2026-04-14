@@ -18,8 +18,11 @@ import urllib.request
 
 # COMMAND ----------
 
-CATALOG = spark.conf.get("spark.databricks.unityCatalog.catalog", "workspace")
-SCHEMA = "wheretolive"
+CATALOG = "workspace"
+# DAB dev mode prefixes schema names — discover the actual deployed name
+_schemas = [r.databaseName for r in spark.sql(f"SHOW SCHEMAS IN {CATALOG} LIKE '*wheretolive*'").collect()]
+SCHEMA = _schemas[0] if _schemas else "wheretolive"
+print(f"Using catalog={CATALOG}, schema={SCHEMA}")
 VOLUME_BASE = f"/Volumes/{CATALOG}/{SCHEMA}/ingest"
 LOCAL_TMP = "/local_disk0/tmp/ingest"
 SOURCE = "rfaster"
@@ -58,18 +61,32 @@ def get_rfaster_page(city_id=1, page=0):
     """Retrieve a single page of Rentfaster listings.
 
     Returns list of listing dicts, or empty list if page is exhausted.
+    Raises on first page failure so we get clear diagnostics.
     """
     url = (
         f"https://www.rentfaster.ca/api/search.json"
         f"?proximity_type=location-city&novacancy=0"
         f"&cur_page={page}&city_id={city_id}"
     )
+    print(f"Fetching page {page}: {url}")
     try:
-        r = urllib.request.urlopen(url, timeout=30)
-        data = json.loads(r.read())
-        return data.get("listings", [])
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 3) AppleWebKit/537.36",
+            "Accept": "application/json",
+        })
+        r = urllib.request.urlopen(req, timeout=30)
+        raw = r.read()
+        print(f"  Response: {r.status}, {len(raw)} bytes")
+        data = json.loads(raw)
+        listings = data.get("listings", [])
+        if page == 0:
+            print(f"  Keys in response: {list(data.keys())}")
+            print(f"  Listings on first page: {len(listings)}")
+        return listings
     except Exception as e:
         print(f"Rentfaster request failed for page {page}: {e}")
+        if page == 0:
+            raise RuntimeError(f"First page fetch failed — cannot scrape: {e}") from e
         return []
 
 # COMMAND ----------

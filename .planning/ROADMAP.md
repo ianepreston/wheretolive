@@ -47,8 +47,8 @@ Plans:
   4. Raw JSON files are browsable via Unity Catalog Volume UI in the workspace
 **Plans**: 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Add ingest Volume to DAB schema and implement Rentfaster scraping notebook
-- [ ] 02-02-PLAN.md — Implement MLS scraping notebook with Incapsula detection
+- [x] 02-01-PLAN.md — Add ingest Volume to DAB schema and implement Rentfaster scraping notebook
+- [x] 02-02-PLAN.md — Implement MLS scraping notebook with Incapsula detection
 - [ ] 02-03-PLAN.md — Deploy bundle, run notebooks on Databricks, and validate scraping results (INGEST-03)
 
 ### Phase 3: SDP Bronze Loading

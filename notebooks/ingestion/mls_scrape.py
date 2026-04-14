@@ -11,8 +11,8 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install geocoder
-# MAGIC dbutils.library.restartPython()
+%pip install geocoder
+dbutils.library.restartPython()
 
 # COMMAND ----------
 
@@ -28,8 +28,11 @@ import requests
 
 # COMMAND ----------
 
-CATALOG = spark.conf.get("spark.databricks.unityCatalog.catalog", "workspace")
-SCHEMA = "wheretolive"
+CATALOG = "workspace"
+# DAB dev mode prefixes schema names — discover the actual deployed name
+_schemas = [r.databaseName for r in spark.sql(f"SHOW SCHEMAS IN {CATALOG} LIKE '*wheretolive*'").collect()]
+SCHEMA = _schemas[0] if _schemas else "wheretolive"
+print(f"Using catalog={CATALOG}, schema={SCHEMA}")
 VOLUME_BASE = f"/Volumes/{CATALOG}/{SCHEMA}/ingest"
 LOCAL_TMP = "/local_disk0/tmp/ingest"
 SOURCE = "mls"
@@ -186,9 +189,16 @@ def scrape_mls_all():
         batch_count += 1
         print(f"Wrote batch {batch_count}: {path} ({len(results)} listings, max price ${top_price:,})")
 
-        if top_price - 1 <= price_min:
-            break
-        price_min = top_price - 1
+        # Advance pagination: if max price didn't move (per-sqft listings
+        # like vacant land return prices < $1), jump to $1000 to skip past them
+        next_min = top_price - 1
+        if next_min <= price_min:
+            if price_min < 1000:
+                print(f"  Price stalled at ${top_price} — jumping to $1,000 to skip per-sqft listings")
+                next_min = 1000
+            else:
+                break
+        price_min = next_min
         time.sleep(1)  # rate limit -- be polite
 
     return batch_count
