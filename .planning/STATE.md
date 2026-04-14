@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-04-14T15:19:41.164Z"
-last_activity: 2026-04-14
+status: executing
+stopped_at: Phase 2 complete
+last_updated: "2026-04-14T16:53:00.000Z"
+last_activity: 2026-04-14 -- Phase 2 execution complete
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Daily real estate listings flow reliably from source to presentation, and each presentation layer is polished enough to genuinely teach how the Databricks feature works.
-**Current focus:** Phase 1: Infrastructure & DAB Setup
+**Current focus:** Phase 2: Listing Ingestion (complete)
 
 ## Current Position
 
 Phase: 2 of 8 (listing ingestion)
-Plan: Not started
-Status: Ready to plan
+Plan: 3/3 complete
+Status: Phase 2 complete — cloud validation done
 Last activity: 2026-04-14
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 2 | - | - |
+| 02 | 3 | ~25min | ~8min |
 
 **Recent Trend:**
 
@@ -73,11 +74,14 @@ None yet.
 
 ### Blockers/Concerns
 
-- Cloud IP blocking: MLS (Realtor.ca) may block Databricks Azure IPs via Incapsula. Must validate in Phase 2.
+- Cloud IP blocking CONFIRMED: Both MLS (Incapsula, intermittent) and Rentfaster (403, consistent) blocked from Databricks Azure IPs. Local fallback (D-02) needed for both.
+- spark.conf.get broken on free-edition Spark Connect — use hardcoded catalog + SHOW SCHEMAS for schema discovery
+- DAB dev-mode prefixes schema names (dev_ian_e_preston_wheretolive) — notebooks must discover at runtime
+- MLS API: RecordsPerPage=100 works, 500 returns empty; per-sqft vacant land listings stall price pagination
 - Lakebase maturity: LOW confidence on current capabilities. Verify GA status at Phase 8 start.
 
 ## Session Continuity
 
-Last session: 2026-04-14T15:19:41.161Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-listing-ingestion/02-CONTEXT.md
+Last session: 2026-04-14T16:53:00.000Z
+Stopped at: Phase 2 complete
+Resume file: .planning/phases/02-listing-ingestion/02-03-SUMMARY.md
