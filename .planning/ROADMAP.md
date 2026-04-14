@@ -31,7 +31,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Running `databricks bundle deploy` from the repo successfully creates/updates all defined resources in the Databricks workspace
   2. A Unity Catalog schema exists under the `workspace` catalog and is accessible from notebooks
   3. The DAB project defines placeholder entries for notebooks, pipelines, and workflows that later phases will populate
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Archive legacy code and create DAB project structure with databricks.yml, resource YAMLs, and placeholder notebooks
+- [ ] 01-02-PLAN.md — Validate, deploy to Databricks workspace, and verify schema and resources exist
 
 ### Phase 2: Listing Ingestion
 **Goal**: Both MLS and Rentfaster scraping notebooks reliably produce raw JSON files in Unity Catalog Volumes
@@ -116,7 +119,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Infrastructure & DAB Setup | 0/TBD | Not started | - |
+| 1. Infrastructure & DAB Setup | 0/2 | Planned | - |
 | 2. Listing Ingestion | 0/TBD | Not started | - |
 | 3. SDP Bronze Loading | 0/TBD | Not started | - |
 | 4. SDP Silver & Gold Transformations | 0/TBD | Not started | - |
