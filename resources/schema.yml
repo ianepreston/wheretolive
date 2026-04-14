@@ -7,3 +7,15 @@ resources:
         WhereToLive real estate listing data.
         Uses table name prefixes for medallion layers:
         bronze_* (raw), silver_* (cleaned), gold_* (presentation-ready).
+
+  volumes:
+    ingest_volume:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      name: ingest
+      volume_type: MANAGED
+      comment: |
+        Raw scraped JSON files from MLS and Rentfaster.
+        Path layout: /Volumes/{catalog}/{schema}/ingest/{source}/{YYYY-MM-DD}/*.json.gz
+        Sources: mls, rfaster
+        Read by SDP Auto Loader in Phase 3.
