@@ -537,7 +537,7 @@ import sys
 | A5 | `requests` is pre-installed on DBR 15.4+/16.4 LTS | Standard Stack | LOW -- virtually certain; requests has been in every DBR since early versions |
 | A6 | DLT/SDP naming terminology continues to evolve | State of the Art | LOW -- cosmetic; does not affect code |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Are MLS cookies still required?**
    - What we know: Legacy code used a complex cookie dictionary to bypass Incapsula. Those specific cookies are from early 2022 and are expired.
