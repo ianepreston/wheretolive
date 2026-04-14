@@ -493,22 +493,25 @@ During research, the following Free Edition limitations were discovered that aff
 | A3 | `serverless: true` for pipeline resource works on free edition | Code Examples | LOW -- if not, remove the field; pipeline defaults to classic compute |
 | A4 | `README.rst` should remain at root and be updated (rather than moved to legacy) | Architecture Patterns | LOW -- cosmetic decision |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact catalog name on the free-edition workspace**
    - What we know: Free Edition workspaces get a `workspace` catalog automatically. Some workspaces get a catalog named after the workspace instead.
    - What's unclear: Whether the catalog is literally named `workspace` or has a different name on this specific workspace.
    - Recommendation: Add a verification task early in the plan that runs `databricks catalogs list --profile free-edition` and confirms the catalog name before writing the schema resource.
+   - **Resolution:** Plan 02 Task 1 Step 1 runs `databricks catalogs list --profile free-edition` as a pre-flight check and adjusts if needed.
 
 2. **Pipeline serverless support on free edition**
    - What we know: Free Edition uses serverless compute exclusively. Lakeflow pipelines support serverless mode.
    - What's unclear: Whether the `serverless: true` setting in the pipeline resource works or is the default on free edition.
    - Recommendation: Include `serverless: true` in the pipeline resource. If deploy fails, remove the field -- serverless may be the only option and thus implicit.
+   - **Resolution:** Plan 01 Task 2 omits `serverless: true` — free edition uses serverless by default and the explicit flag may cause validation issues.
 
 3. **Whether `databricks bundle deploy` creates the schema immediately or lazily**
    - What we know: Schema resources are part of the deploy cycle.
    - What's unclear: Whether the schema is created in the catalog during `bundle deploy` or only when a pipeline or job first references it.
    - Recommendation: After deploy, verify with `databricks schemas list --catalog workspace --profile free-edition` or via a setup notebook.
+   - **Resolution:** Plan 02 Task 1 Step 4 explicitly verifies schema existence post-deploy with `databricks schemas list`.
 
 ## Environment Availability
 
