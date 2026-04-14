@@ -1,0 +1,25 @@
+[project]
+name = "wheretolive"
+version = "0.1.0"
+description = "Real estate listing aggregator for Calgary — scrapes MLS and Rentfaster, processes through Databricks medallion architecture"
+readme = "LICENSE.rst"
+authors = [
+  { name = "ianepreston", email = "17241371+ianepreston@users.noreply.github.com" },
+]
+requires-python = ">=3.11"
+dependencies = [
+  "requests>=2.32.0",
+  "geocoder>=1.38.1",
+  "databricks-sdk>=0.40.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+  "ipython>=9.0.0",
+  "pytest>=9.0.0",
+  "ruff>=0.15.0",
+]
