@@ -8,7 +8,6 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-  "requests>=2.32.0",
   "databricks-sdk>=0.40.0",
   "playwright>=1.40.0",
 ]

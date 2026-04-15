@@ -5,7 +5,7 @@ uploads gzip-compressed JSON to the ingest Volume via Databricks SDK,
 then triggers the medallion pipeline via databricks bundle run.
 
 Usage:
-    pip install requests databricks-sdk
+    pip install databricks-sdk playwright
     python scripts/local_ingest.py
 
 Requires a Databricks CLI profile named 'free-edition' (or set
@@ -19,13 +19,11 @@ import os
 import random
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.request
 from io import BytesIO
 from pathlib import Path
 
-import requests
 from databricks.sdk import WorkspaceClient
 
 # ---------------------------------------------------------------------------
@@ -150,159 +148,113 @@ def scrape_rentfaster():
 # MLS scraping
 # ---------------------------------------------------------------------------
 
-def get_incapsula_cookies():
-    """Launch a headless browser to obtain Incapsula session cookies from realtor.ca.
+CALGARY_BOUNDS = {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
 
-    Incapsula bot protection requires valid session cookies obtained from a real
-    browser visit. This function navigates to realtor.ca, waits for the page
-    (and Incapsula challenge) to complete, then extracts cookies for use with
-    the requests-based API calls.
 
-    Returns
-    -------
-    dict
-        A {name: value} mapping of cookies whose domain contains 'realtor.ca'.
-        Returns an empty dict on failure (graceful degradation).
+def scrape_mls_page(page, price_min=0, price_max=10_000_000):
+    """Scrape a single price bracket from MLS API via browser fetch.
+
+    Uses page.evaluate(fetch(...)) so the request inherits the browser's
+    TLS fingerprint, cookies, and headers — bypassing Incapsula detection.
     """
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        print("WARNING: playwright not installed — skipping cookie extraction")
-        return {}
-
-    browser = None
-    pw = None
-    try:
-        pw = sync_playwright().start()
-        browser = pw.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            )
-        )
-        page = context.new_page()
-        page.goto("https://www.realtor.ca", wait_until="networkidle", timeout=15000)
-
-        all_cookies = context.cookies()
-        cookies = {
-            c["name"]: c["value"]
-            for c in all_cookies
-            if "realtor.ca" in c.get("domain", "")
-        }
-        return cookies
-    except Exception as e:
-        print(f"WARNING: Cookie extraction failed — {e}")
-        return {}
-    finally:
-        if browser:
-            browser.close()
-        if pw:
-            pw.stop()
-
-
-def get_calgary_bounds():
-    """Return Calgary bounding box (hardcoded — no external API needed)."""
-    return {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
-
-
-def scrape_mls_page(bounds, price_min=0, price_max=10_000_000, max_attempts=3, cookies=None):
-    """Scrape a single price bracket from MLS API."""
-    headers = {
-        "accept-encoding": "gzip, deflate, br",
-        "user-agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "referer": "https://www.realtor.ca",
-        "origin": "https://www.realtor.ca",
-        "sec-fetch-site": "same-site",
-    }
     payload = {
         "CultureId": "1",
         "ApplicationId": "1",
-        "RecordsPerPage": 100,
-        "MaximumResults": 100,
-        "PropertySearchTypeId": 1,
-        "PriceMin": price_min,
-        "PriceMax": price_max,
+        "RecordsPerPage": "100",
+        "MaximumResults": "100",
+        "PropertySearchTypeId": "1",
+        "PriceMin": str(price_min),
+        "PriceMax": str(price_max),
         "TransactionTypeId": "2",
-        "LongitudeMin": bounds["west"],
-        "LongitudeMax": bounds["east"],
-        "LatitudeMin": bounds["south"],
-        "LatitudeMax": bounds["north"],
+        "LongitudeMin": str(CALGARY_BOUNDS["west"]),
+        "LongitudeMax": str(CALGARY_BOUNDS["east"]),
+        "LatitudeMin": str(CALGARY_BOUNDS["south"]),
+        "LatitudeMax": str(CALGARY_BOUNDS["north"]),
         "Sort": "1-A",
     }
-
-    for attempt in range(1, max_attempts + 1):
-        try:
-            r = requests.post(MLS_API_URL, data=payload, headers=headers, cookies=cookies, timeout=30)
-            if r.ok:
-                content_type = r.headers.get("content-type", "")
-                if "json" not in content_type and "javascript" not in content_type:
-                    body = r.text[:500]
-                    if "incap" in body.lower() or "<html" in body.lower():
-                        print(f"  INCAPSULA BLOCK on attempt {attempt}")
-                        if attempt == max_attempts:
-                            return None  # signal blocked
-                    else:
-                        return r.json().get("Results", [])
-                else:
-                    return r.json().get("Results", [])
-            else:
-                print(f"  HTTP {r.status_code} on attempt {attempt}")
-        except requests.RequestException as e:
-            print(f"  Request error: {e} (attempt {attempt})")
-
-        time.sleep(min(5 * attempt, 15))
-
-    return None
+    try:
+        result = page.evaluate("""async (payload) => {
+            const resp = await fetch('https://api2.realtor.ca/Listing.svc/PropertySearch_Post', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams(payload).toString(),
+            });
+            if (!resp.ok) return {_error: true, status: resp.status};
+            return await resp.json();
+        }""", payload)
+        if isinstance(result, dict) and result.get("_error"):
+            print(f"  HTTP {result['status']}")
+            return None
+        return result.get("Results", [])
+    except Exception as e:
+        print(f"  Browser fetch error: {e}")
+        return None
 
 
 def scrape_mls():
-    """Scrape all MLS listings and upload to Volume."""
+    """Scrape all MLS listings via browser-based API calls and upload to Volume."""
     print(f"\n{'='*60}")
     print(f"MLS scrape — {TODAY}")
     print(f"{'='*60}")
-    bounds = get_calgary_bounds()
     clean_day_folder("mls")
 
-    cookies = get_incapsula_cookies()
-    print(f"  Obtained {len(cookies)} cookies from browser session")
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("ERROR: playwright not installed — cannot scrape MLS")
+        return 0
+
+    pw = sync_playwright().start()
+    browser = pw.chromium.launch(headless=True)
+    context = browser.new_context(
+        user_agent=(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+    )
+    page = context.new_page()
+
+    print("  Navigating to realtor.ca for browser session...")
+    page.goto("https://www.realtor.ca", wait_until="domcontentloaded", timeout=30000)
+    page.wait_for_timeout(5000)
+    print("  Browser session established")
 
     price_min = 0
     batch_count = 0
     total_listings = 0
 
-    while True:
-        results = scrape_mls_page(bounds, price_min=price_min, cookies=cookies)
-        if results is None:
-            print("MLS scraping blocked — stopping")
-            break
-        if not results:
-            break
-        top_price = int(round(max(
-            float(r["Property"]["PriceUnformattedValue"])
-            for r in results
-        ), 0))
-        filename = f"mls_maxprice_{top_price:08d}"
-        upload_gzip_json(results, "mls", filename)
-        batch_count += 1
-        total_listings += len(results)
-        print(f"  Batch {batch_count}: {len(results)} listings, max price ${top_price:,}")
-
-        # Handle per-sqft listings that stall pagination
-        next_min = top_price - 1
-        if next_min <= price_min:
-            if price_min < 1000:
-                print(f"  Price stalled at ${top_price} — jumping to $1,000")
-                next_min = 1000
-            else:
+    try:
+        while True:
+            results = scrape_mls_page(page, price_min=price_min)
+            if results is None:
+                print("MLS scraping blocked — stopping")
                 break
-        price_min = next_min
-        time.sleep(2 + random.random())
+            if not results:
+                break
+            top_price = int(round(max(
+                float(r["Property"]["PriceUnformattedValue"])
+                for r in results
+            ), 0))
+            filename = f"mls_maxprice_{top_price:08d}"
+            upload_gzip_json(results, "mls", filename)
+            batch_count += 1
+            total_listings += len(results)
+            print(f"  Batch {batch_count}: {len(results)} listings, max price ${top_price:,}")
+
+            # Handle per-sqft listings that stall pagination
+            next_min = top_price - 1
+            if next_min <= price_min:
+                if price_min < 1000:
+                    print(f"  Price stalled at ${top_price} — jumping to $1,000")
+                    next_min = 1000
+                else:
+                    break
+            price_min = next_min
+            time.sleep(2 + random.random())
+    finally:
+        browser.close()
+        pw.stop()
 
     print(f"MLS complete: {batch_count} batches, {total_listings} listings")
     return batch_count

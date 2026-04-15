@@ -718,7 +718,6 @@ source = { editable = "." }
 dependencies = [
     { name = "databricks-sdk" },
     { name = "playwright" },
-    { name = "requests" },
 ]
 
 [package.dev-dependencies]
@@ -733,7 +732,6 @@ dev = [
 requires-dist = [
     { name = "databricks-sdk", specifier = ">=0.40.0" },
     { name = "playwright", specifier = ">=1.40.0" },
-    { name = "requests", specifier = ">=2.32.0" },
 ]
 
 [package.metadata.requires-dev]
