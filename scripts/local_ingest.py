@@ -5,7 +5,7 @@ uploads gzip-compressed JSON to the ingest Volume via Databricks SDK,
 then triggers the medallion pipeline via databricks bundle run.
 
 Usage:
-    pip install requests geocoder databricks-sdk
+    pip install requests databricks-sdk
     python scripts/local_ingest.py
 
 Requires a Databricks CLI profile named 'free-edition' (or set
@@ -25,7 +25,6 @@ import urllib.request
 from io import BytesIO
 from pathlib import Path
 
-import geocoder
 import requests
 from databricks.sdk import WorkspaceClient
 
@@ -204,17 +203,8 @@ def get_incapsula_cookies():
 
 
 def get_calgary_bounds():
-    """Get Calgary bounding box from geocoder with hardcoded fallback."""
-    try:
-        g = geocoder.osm("Calgary, Canada")
-        if g.north is None or g.south is None:
-            raise ValueError("geocoder returned None bounds (likely 403)")
-        bounds = {"north": g.north, "south": g.south, "east": g.east, "west": g.west}
-        print(f"  Calgary bounds from OSM: {bounds}")
-        return bounds
-    except Exception as e:
-        print(f"  Geocoder failed ({e}), using hardcoded bounds")
-        return {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
+    """Return Calgary bounding box (hardcoded — no external API needed)."""
+    return {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
 
 
 def scrape_mls_page(bounds, price_min=0, price_max=10_000_000, max_attempts=3, cookies=None):

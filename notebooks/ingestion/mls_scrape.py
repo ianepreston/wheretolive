@@ -11,11 +11,6 @@
 
 # COMMAND ----------
 
-%pip install geocoder
-dbutils.library.restartPython()
-
-# COMMAND ----------
-
 import datetime as dt
 import gzip
 import json
@@ -23,7 +18,6 @@ import os
 import shutil
 import time
 
-import geocoder
 import requests
 
 # COMMAND ----------
@@ -38,26 +32,7 @@ LOCAL_TMP = "/local_disk0/tmp/ingest"
 SOURCE = "mls"
 TODAY = f"{dt.date.today():%Y-%m-%d}"
 MLS_API_URL = "https://api2.realtor.ca/Listing.svc/PropertySearch_Post"
-
-# COMMAND ----------
-
-try:
-    GEOBOUND = geocoder.osm("Calgary, Canada")
-    BOUNDS = {
-        "north": GEOBOUND.north,
-        "south": GEOBOUND.south,
-        "east": GEOBOUND.east,
-        "west": GEOBOUND.west,
-    }
-    print(f"Calgary bounds from OSM: {BOUNDS}")
-except Exception as e:
-    print(f"Geocoder failed ({e}), using hardcoded Calgary bounds")
-    BOUNDS = {
-        "north": 51.21,
-        "south": 50.84,
-        "east": -113.86,
-        "west": -114.32,
-    }
+BOUNDS = {"north": 51.21, "south": 50.84, "east": -113.86, "west": -114.32}
 
 # COMMAND ----------
 
