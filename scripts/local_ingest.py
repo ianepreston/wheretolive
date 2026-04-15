@@ -105,6 +105,9 @@ def get_rfaster_page(city_id=1, page=0):
     req = urllib.request.Request(url, headers={
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Accept": "application/json",
+        "Referer": "https://www.rentfaster.ca",
+        "Origin": "https://www.rentfaster.ca",
+        "X-Requested-With": "XMLHttpRequest",
     })
     r = urllib.request.urlopen(req, timeout=30)
     data = json.loads(r.read())
